@@ -39,7 +39,7 @@ export default function Register() {
         <div className="min-h-screen bg-white flex items-center justify-center p-4 font-mono">
             <div className="max-w-md w-full p-8 bg-white border-4 border-black shadow-[16px_16px_0_0_#000]">
                 <h2 className="text-4xl font-black uppercase text-center text-black mb-8 tracking-tighter">
-                    REGISTER
+                    REGISTER FOR HARMONY
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
