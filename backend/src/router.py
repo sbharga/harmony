@@ -72,3 +72,13 @@ def update_design(design_id: str, design: schemas.DesignCreate, db: Session = De
     db.commit()
     db.refresh(db_design)
     return db_design
+
+@api_router.delete("/designs/{design_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_design(design_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    db_design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
+    if db_design is None:
+        raise HTTPException(status_code=404, detail="Design not found")
+    
+    db.delete(db_design)
+    db.commit()
+    return None

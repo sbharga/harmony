@@ -23,6 +23,7 @@ export default function Dashboard() {
     const [designName, setDesignName] = useState('');
     const [designDescription, setDesignDescription] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const fetchUserAndDesigns = async () => {
@@ -121,6 +122,33 @@ export default function Dashboard() {
             alert(err.message);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleDeleteDesign = async () => {
+        if (!editingDesign) return;
+
+        if (!window.confirm("ARE YOU SURE YOU WANT TO DELETE THIS DESIGN? THIS CANNOT BE UNDONE.")) return;
+
+        setIsDeleting(true);
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`/api/designs/${editingDesign.id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to delete design');
+
+            setDesigns(designs.filter(d => d.id !== editingDesign.id));
+            handleCloseModal();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -237,12 +265,14 @@ export default function Dashboard() {
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 onSave={handleSaveDesign}
+                onDelete={handleDeleteDesign}
                 editingDesign={editingDesign}
                 designName={designName}
                 setDesignName={setDesignName}
                 designDescription={designDescription}
                 setDesignDescription={setDesignDescription}
                 isSaving={isSaving}
+                isDeleting={isDeleting}
             />
         </div>
     );
