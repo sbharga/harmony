@@ -7,7 +7,9 @@ export default function DesignModal({
     setDesignName,
     designDescription,
     setDesignDescription,
-    isSaving
+    isSaving,
+    isDeleting,
+    onDelete
 }) {
     if (!isOpen) return null;
 
@@ -51,17 +53,30 @@ export default function DesignModal({
                     </div>
 
                     <div className="pt-8 flex flex-col sm:flex-row justify-end gap-6 border-t-8 border-black mt-8">
+                        {editingDesign && (
+                            <button
+                                type="button"
+                                onClick={onDelete}
+                                disabled={isDeleting || isSaving}
+                                className="px-6 py-4 bg-white text-black border-4 border-black font-black uppercase hover:bg-black hover:text-white transition-none disabled:opacity-50 w-full sm:w-auto text-center text-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0_0_#000] sm:mr-auto flex items-center justify-center gap-3"
+                            >
+                                {isDeleting && (
+                                    <div className="w-5 h-5 border-4 border-current border-t-transparent animate-spin pointer-events-none"></div>
+                                )}
+                                DELETE
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={onClose}
-                            disabled={isSaving}
+                            disabled={isSaving || isDeleting}
                             className="px-6 py-4 bg-white text-black border-4 border-black font-black uppercase hover:bg-black hover:text-white transition-none disabled:opacity-50 w-full sm:w-auto text-center text-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0_0_#000]"
                         >
                             CANCEL
                         </button>
                         <button
                             type="submit"
-                            disabled={isSaving || !designName.trim()}
+                            disabled={isSaving || isDeleting || !designName.trim()}
                             className="px-8 py-4 bg-black text-white border-4 border-black font-black uppercase hover:bg-white hover:text-black transition-none disabled:opacity-50 w-full sm:w-auto text-center flex items-center justify-center gap-3 shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0_0_#000] text-xl"
                         >
                             {isSaving && (
