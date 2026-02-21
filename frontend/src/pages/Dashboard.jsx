@@ -138,7 +138,7 @@ export default function Dashboard() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <h1 className="text-3xl font-black uppercase tracking-tighter text-black">
-                            DASHBOARD
+                            HARMONY
                         </h1>
                         <div className="flex items-center gap-6">
                             <div className="hidden sm:flex items-center gap-3">
