@@ -40,3 +40,35 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
 async def read_users_me(current_user: models.User = Depends(get_current_active_user)):
     return current_user
 
+@api_router.get("/designs", response_model=list[schemas.Design])
+def read_designs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    designs = db.query(models.Design).filter(models.Design.owner_id == current_user.id).offset(skip).limit(limit).all()
+    return designs
+
+@api_router.post("/designs", response_model=schemas.Design)
+def create_design(design: schemas.DesignCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    db_design = models.Design(**design.model_dump(), owner_id=current_user.id)
+    db.add(db_design)
+    db.commit()
+    db.refresh(db_design)
+    return db_design
+
+@api_router.get("/designs/{design_id}", response_model=schemas.Design)
+def read_design(design_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
+    if design is None:
+        raise HTTPException(status_code=404, detail="Design not found")
+    return design
+
+@api_router.put("/designs/{design_id}", response_model=schemas.Design)
+def update_design(design_id: str, design: schemas.DesignCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    db_design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
+    if db_design is None:
+        raise HTTPException(status_code=404, detail="Design not found")
+    
+    for key, value in design.model_dump().items():
+        setattr(db_design, key, value)
+    
+    db.commit()
+    db.refresh(db_design)
+    return db_design
