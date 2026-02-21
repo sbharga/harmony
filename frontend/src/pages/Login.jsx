@@ -11,7 +11,6 @@ export default function Login() {
         e.preventDefault();
         setError('');
 
-        // OAuth2PasswordRequestForm requires form-encoded data
         const formData = new URLSearchParams();
         formData.append('username', username);
         formData.append('password', password);
@@ -39,39 +38,39 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-            <div className="max-w-md w-full p-8 bg-gray-900 rounded-2xl shadow-xl border border-gray-800">
-                <h2 className="text-3xl font-bold text-center text-white mb-8">
-                    Welcome Back
+        <div className="min-h-screen bg-white flex items-center justify-center p-4 font-mono">
+            <div className="max-w-md w-full p-8 bg-white border-4 border-black shadow-[16px_16px_0_0_#000]">
+                <h2 className="text-4xl font-black uppercase text-center text-black mb-8 tracking-tighter">
+                    LOGIN
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
+                        <div className="p-4 bg-black text-white font-bold uppercase border-4 border-black text-center text-sm">
                             {error}
                         </div>
                     )}
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Username</label>
+                            <label className="block text-sm font-black uppercase text-black mb-2 tracking-wide">Username</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                placeholder="Enter your username"
+                                className="w-full px-4 py-3 bg-white border-4 border-black text-black font-bold uppercase focus:outline-none focus:ring-0 focus:border-black placeholder-gray-300"
+                                placeholder="USERNAME"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
+                            <label className="block text-sm font-black uppercase text-black mb-2 tracking-wide">Password</label>
                             <input
                                 type="password"
                                 required
-                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                placeholder="Enter your password"
+                                className="w-full px-4 py-3 bg-white border-4 border-black text-black font-bold uppercase focus:outline-none focus:ring-0 focus:border-black placeholder-gray-300"
+                                placeholder="PASSWORD"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -80,15 +79,15 @@ export default function Login() {
 
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition shadow-lg shadow-blue-600/20"
+                        className="w-full py-4 px-4 bg-black text-white font-black uppercase border-4 border-black hover:bg-white hover:text-black transition-none text-xl shadow-[8px_8px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[4px_4px_0_0_#000]"
                     >
                         Sign In
                     </button>
 
-                    <p className="text-center text-gray-400 text-sm">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-blue-500 hover:text-blue-400 transition">
-                            Register here
+                    <p className="text-center text-black font-black text-sm uppercase mt-6 p-4 border-2 border-black bg-white">
+                        NO ACCOUNT?{' '}
+                        <Link to="/register" className="ml-2 underline hover:bg-black hover:text-white transition-none px-2 py-1">
+                            REGISTER
                         </Link>
                     </p>
                 </form>

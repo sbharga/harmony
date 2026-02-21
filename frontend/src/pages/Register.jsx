@@ -36,44 +36,44 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
-            <div className="max-w-md w-full p-8 bg-gray-900 rounded-2xl shadow-xl border border-gray-800">
-                <h2 className="text-3xl font-bold text-center text-white mb-8">
-                    Create an Account
+        <div className="min-h-screen bg-white flex items-center justify-center p-4 font-mono">
+            <div className="max-w-md w-full p-8 bg-white border-4 border-black shadow-[16px_16px_0_0_#000]">
+                <h2 className="text-4xl font-black uppercase text-center text-black mb-8 tracking-tighter">
+                    REGISTER
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {error && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-sm text-center">
+                        <div className="p-4 bg-black text-white font-bold uppercase border-4 border-black text-center text-sm">
                             {error}
                         </div>
                     )}
                     {success && (
-                        <div className="p-3 bg-green-500/10 border border-green-500/50 rounded-lg text-green-500 text-sm text-center">
-                            Registration successful! Redirecting...
+                        <div className="p-4 bg-black text-white font-bold uppercase border-4 border-black text-center text-sm">
+                            SUCCESS! REDIRECTING...
                         </div>
                     )}
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Username</label>
+                            <label className="block text-sm font-black uppercase text-black mb-2 tracking-wide">Username</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                                placeholder="Choose a username"
+                                className="w-full px-4 py-3 bg-white border-4 border-black text-black font-bold uppercase focus:outline-none focus:ring-0 focus:border-black placeholder-gray-300"
+                                placeholder="CHOOSE USERNAME"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
+                            <label className="block text-sm font-black uppercase text-black mb-2 tracking-wide">Password</label>
                             <input
                                 type="password"
                                 required
-                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition"
-                                placeholder="Choose a password"
+                                className="w-full px-4 py-3 bg-white border-4 border-black text-black font-bold uppercase focus:outline-none focus:ring-0 focus:border-black placeholder-gray-300"
+                                placeholder="CHOOSE PASSWORD"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
@@ -82,15 +82,15 @@ export default function Register() {
 
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition shadow-lg shadow-green-600/20"
+                        className="w-full py-4 px-4 bg-black text-white font-black uppercase border-4 border-black hover:bg-white hover:text-black transition-none text-xl shadow-[8px_8px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[4px_4px_0_0_#000]"
                     >
                         Register
                     </button>
 
-                    <p className="text-center text-gray-400 text-sm">
-                        Already have an account?{' '}
-                        <Link to="/login" className="text-green-500 hover:text-green-400 transition">
-                            Sign in here
+                    <p className="text-center text-black font-black text-sm uppercase mt-6 p-4 border-2 border-black bg-white">
+                        HAVE ACCOUNT?{' '}
+                        <Link to="/login" className="ml-2 underline hover:bg-black hover:text-white transition-none px-2 py-1">
+                            SIGN IN
                         </Link>
                     </p>
                 </form>
