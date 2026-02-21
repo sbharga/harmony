@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import Design from './pages/Design'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -25,6 +26,14 @@ function App() {
         }
       />
       <Route
+        path="/design/:id"
+        element={
+          <ProtectedRoute>
+            <Design />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/"
         element={
           <ProtectedRoute>
@@ -38,3 +47,4 @@ function App() {
 }
 
 export default App
+
