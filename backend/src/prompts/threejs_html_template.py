@@ -1,9 +1,8 @@
 import json
 
 
-def render_html(spec: dict, harmony_score: float | None = None, heatmap: dict | None = None) -> str:
+def render_html(spec: dict, heatmap: dict | None = None) -> str:
     spec_json = json.dumps(spec)
-    score_js = "null" if harmony_score is None else str(round(harmony_score, 1))
     heatmap_js = "null" if heatmap is None else json.dumps(heatmap)
 
     return f"""<!DOCTYPE html>
@@ -16,22 +15,6 @@ def render_html(spec: dict, harmony_score: float | None = None, heatmap: dict | 
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{ background: #1a1a2e; overflow: hidden; width: 100vw; height: 100vh; font-family: sans-serif; }}
   canvas {{ display: block; }}
-  #score-badge {{
-    display: none;
-    position: fixed; top: 12px; right: 12px;
-    background: rgba(15,15,30,0.85);
-    border: 1.5px solid #6366f1;
-    border-radius: 10px;
-    padding: 8px 14px;
-    color: #e2e8f0;
-    font-size: 13px;
-    font-weight: 600;
-    backdrop-filter: blur(6px);
-    z-index: 100;
-    line-height: 1.5;
-  }}
-  #score-badge .label {{ color: #a5b4fc; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }}
-  #score-badge .value {{ font-size: 22px; font-weight: 800; color: #fff; }}
   #legend {{
     position: fixed; bottom: 12px; left: 12px;
     background: rgba(15,15,30,0.75);
@@ -74,10 +57,6 @@ def render_html(spec: dict, harmony_score: float | None = None, heatmap: dict | 
     <span><i style="background:#8b5cf6"></i>Unreachable</span>
   </div>
 </div>
-<div id="score-badge">
-  <div class="label">Harmony Score</div>
-  <div class="value" id="score-val"></div>
-</div>
 <div id="legend"></div>
 
 <script type="importmap">
@@ -94,7 +73,6 @@ import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
 import {{ CSS2DRenderer, CSS2DObject }} from 'three/addons/renderers/CSS2DRenderer.js';
 
 const SPEC = {spec_json};
-const HARMONY_SCORE = {score_js};
 const HEATMAP = {heatmap_js};
 
 // ── Palette (from testing/harmonysimulation-claude/src/preview/assets/palette.js) ─
@@ -500,14 +478,6 @@ if (HEATMAP !== null) {{
     }}
   }}
   document.getElementById('heatmap-panel').style.display = 'block';
-}}
-
-// Score badge
-if (HARMONY_SCORE !== null) {{
-  document.getElementById('score-badge').style.display = 'block';
-  const val = document.getElementById('score-val');
-  val.textContent = HARMONY_SCORE.toFixed(1);
-  val.style.color = HARMONY_SCORE >= 75 ? '#4ade80' : HARMONY_SCORE >= 50 ? '#facc15' : '#f87171';
 }}
 
 // ── Render loop ───────────────────────────────────────────────────────────────

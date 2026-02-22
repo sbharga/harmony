@@ -33,6 +33,11 @@ export default function Design() {
     const [image1ft, setImage1ft] = useState(null);
 
     const [jsonContent, setJsonContent] = useState(null);
+    const [initialScoreData, setInitialScoreData] = useState(null);
+    const [optimizedScoreData, setOptimizedScoreData] = useState(null);
+    const [hoverLeft, setHoverLeft] = useState(false);
+    const [hoverRight, setHoverRight] = useState(false);
+    const stageNames = ["Upload Images", "Room Analysis", "3D Map", "Final Design"];
 
     const fetchDesign = async () => {
         const token = localStorage.getItem('token');
@@ -58,6 +63,24 @@ export default function Design() {
                     .catch(console.error);
             } else {
                 setJsonContent(null);
+            }
+            const isf = data.files?.find(f => f.file_type === 'initial_score_json');
+            if (isf) {
+                fetch(isf.file_path)
+                    .then(res => res.json())
+                    .then(json => setInitialScoreData(json))
+                    .catch(console.error);
+            } else {
+                setInitialScoreData(null);
+            }
+            const osf = data.files?.find(f => f.file_type === 'optimized_score_json');
+            if (osf) {
+                fetch(osf.file_path)
+                    .then(res => res.json())
+                    .then(json => setOptimizedScoreData(json))
+                    .catch(console.error);
+            } else {
+                setOptimizedScoreData(null);
             }
         } catch (err) {
             setError(err.message);
@@ -168,8 +191,8 @@ export default function Design() {
         switch (currentStage) {
             case 1: return <Stage1Input image6ft={image6ft} image1ft={image1ft} setImage6ft={setImage6ft} setImage1ft={setImage1ft} file6ft={file6ft} file1ft={file1ft} />;
             case 2: return <Stage2Analysis jsonContent={jsonContent} hasResults={hasResults} />;
-            case 3: return <Stage3Map htmlFile={htmlFile} />;
-            case 4: return <Stage4Final reorgFile={reorgFile} />;
+            case 3: return <Stage3Map htmlFile={htmlFile} scoreData={initialScoreData} />;
+            case 4: return <Stage4Final reorgFile={reorgFile} scoreData={optimizedScoreData} />;
             default: return null;
         }
     };
@@ -229,20 +252,38 @@ export default function Design() {
 
             {design && (
                 <>
-                    <button
-                        onClick={handlePrev}
-                        disabled={currentStage === 1 || isProcessing}
-                        className={`hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full items-center justify-center bg-cream/90 backdrop-blur-md border border-moss-pale text-forest-dark/60 transition-all shadow-md ${currentStage === 1 || isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-cream hover:text-moss hover:border-moss/50 hover:scale-105'}`}
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-                    </button>
-                    <button
-                        onClick={handleNext}
-                        disabled={!canGoNext || isProcessing}
-                        className={`hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full items-center justify-center bg-cream/90 backdrop-blur-md border border-moss-pale text-forest-dark/60 transition-all shadow-md ${!canGoNext || isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-cream hover:text-moss hover:border-moss/50 hover:scale-105'}`}
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-                    </button>
+                    <div className="hidden lg:block fixed left-10 top-1/2 -translate-y-1/2 z-50">
+                        <button
+                            onClick={handlePrev}
+                            disabled={currentStage === 1 || isProcessing}
+                            onMouseEnter={() => setHoverLeft(true)}
+                            onMouseLeave={() => setHoverLeft(false)}
+                            className={`relative w-12 h-12 rounded-full flex items-center justify-center bg-cream/90 backdrop-blur-md border border-moss-pale text-forest-dark/60 transition-all shadow-md ${currentStage === 1 || isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-cream hover:text-moss hover:border-moss/50 hover:scale-105'}`}
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                            {hoverLeft && currentStage > 1 && !isProcessing && (
+                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-cream border border-moss-pale text-forest-dark/80 text-xs font-medium px-2.5 py-1 rounded-full shadow-md whitespace-nowrap pointer-events-none">
+                                    {stageNames[currentStage - 2]}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                    <div className="hidden lg:block fixed right-10 top-1/2 -translate-y-1/2 z-50">
+                        <button
+                            onClick={handleNext}
+                            disabled={!canGoNext || isProcessing}
+                            onMouseEnter={() => setHoverRight(true)}
+                            onMouseLeave={() => setHoverRight(false)}
+                            className={`relative w-12 h-12 rounded-full flex items-center justify-center bg-cream/90 backdrop-blur-md border border-moss-pale text-forest-dark/60 transition-all shadow-md ${!canGoNext || isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-cream hover:text-moss hover:border-moss/50 hover:scale-105'}`}
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                            {hoverRight && canGoNext && !isProcessing && (
+                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-cream border border-moss-pale text-forest-dark/80 text-xs font-medium px-2.5 py-1 rounded-full shadow-md whitespace-nowrap pointer-events-none">
+                                    {stageNames[currentStage]}
+                                </span>
+                            )}
+                        </button>
+                    </div>
                 </>
             )}
 
