@@ -72,6 +72,12 @@ def _dims_for(item):
     v = item.get("variant") or "default"
     family = PRESETS.get(t) or PRESETS["unknownobstacle"]
     dims = family.get(v) or family.get("default") or {"w": 0.6, "d": 0.6}
+    # Allow table length override from model output (long side = w)
+    if t == "table":
+        length = item.get("length_m")
+        if length and length > 0.2:
+            dims = dict(dims)
+            dims["w"] = float(length)
     yaw = ((item.get("yaw_deg") or 0) % 360 + 360) % 360
     if abs(((yaw + 45) % 180) - 90) < 1e-3:
         return {"w": dims["d"], "d": dims["w"]}
@@ -767,6 +773,10 @@ def _candidates_for(obj, room, all_objects=None):
     # For seats (chairs), generate candidates that face nearby tables
     obj_type = (obj.get("type") or "").lower()
     if obj_type == "seat" and all_objects:
+        # If nearest table is high, prefer stool variant
+        nearest_table = _find_nearest_table(obj.get("pos") or {"x": room["w"] / 2, "z": room["d"] / 2}, all_objects)
+        if nearest_table and nearest_table.get("variant") == "high" and (obj.get("variant") or "") != "stool":
+            obj["variant"] = "stool"
         base_candidates = _interior_candidates(room)
         # For each candidate position, adjust yaw to face nearest table
         enhanced_candidates = []

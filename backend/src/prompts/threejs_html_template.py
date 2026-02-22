@@ -222,8 +222,12 @@ const TABLE_PRESETS = {{
   console:   {{ w:1.20, d:0.35, h:0.85 }},
   high:      {{ w:1.60, d:0.90, h:1.225 }},
 }};
-function makeTable(variant, color) {{
-  const dims = TABLE_PRESETS[variant] || TABLE_PRESETS.side;
+function makeTable(variant, color, lengthOverride) {{
+  const base = TABLE_PRESETS[variant] || TABLE_PRESETS.side;
+  const dims = {{ ...base }};
+  if (lengthOverride && lengthOverride > 0.4) {{
+    dims.w = lengthOverride;
+  }}
   const c = colorOf(color, variant === 'desk' ? 'desk' : 'table');
   const g = new THREE.Group();
   const topThick = 0.06;
@@ -458,7 +462,7 @@ const legendItems = {{}};
   if      (t === 'bed')         group = makeBed(v || 'queen', obj.color);
   else if (t === 'sofa')        group = makeSofa(v || 'sofa3', obj.color);
   else if (t === 'seat')        group = makeSeat(v || 'accent', obj.color);
-  else if (t === 'table')       group = makeTable(v || 'side', obj.color);
+  else if (t === 'table')       group = makeTable(v || 'side', obj.color, obj.length_m);
   else if (t === 'storageunit') group = makeStorageUnit(v || 'dresser_low', obj.color);
   else if (t === 'pillar')      group = makePillar(room.h, obj.color);
   else                          group = makeUnknown(obj.shape, obj.color);
