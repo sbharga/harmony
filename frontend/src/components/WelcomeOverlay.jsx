@@ -64,7 +64,6 @@ export function WelcomeOverlay({ onComplete }) {
                 <h1 className="wo-title">
                     Harmony
                 </h1>
-                <p className="wo-subtitle">Click &amp; swipe to continue</p>
             </div>
 
             <div className="wo-progress-track">

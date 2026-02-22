@@ -193,7 +193,12 @@ export default function Design() {
             case 1: return <Stage1Input image6ft={image6ft} image1ft={image1ft} setImage6ft={setImage6ft} setImage1ft={setImage1ft} file6ft={file6ft} file1ft={file1ft} />;
             case 2: return <Stage2Analysis jsonContent={jsonContent} hasResults={hasResults} />;
             case 3: return <Stage3Map htmlFile={htmlFile} scoreData={initialScoreData} />;
-            case 4: return <Stage4Final reorgFile={reorgFile} initialFile={htmlFile} originalHeatmapFile={heatmapOriginal} scoreData={optimizedScoreData} />;
+            case 4: return <Stage4Final
+                reorgFile={reorgFile}
+                initialFile={htmlFile}
+                originalHeatmapFile={heatmapOriginal}
+                scoreData={optimizedScoreData || initialScoreData}
+            />;
             default: return null;
         }
     };
