@@ -37,6 +37,7 @@ LAYOUT_SCHEMA = {
                     "variant": {"type": "STRING"},
                     "shape": {"type": "STRING"},
                     "color": {"type": "STRING"},
+                    "length_m": {"type": "NUMBER"},
                     "pos": {
                         "type": "OBJECT",
                         "properties": {

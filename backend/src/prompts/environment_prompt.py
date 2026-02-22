@@ -9,7 +9,7 @@ FRAME:
 - pos{x,z} = footprint center on floor; yaw_deg = rotation about +Y (deg). Prefer 90° multiples when plausible. ALWAYS set yaw_deg to reflect the object's facing direction.
 - Treat glass walls as walls. Ignore doors/windows entirely. If a SIDE wall is clearly visible (left or right), set anchors.pillar.wall to that side (use x/z/w as you see fit); otherwise omit pillar.
 - For rectangular items (table/storageUnit/bed/sofa), align their LONG side via yaw_deg; do NOT swap dimensions (host uses presets).
-- CHAIR FACING (important): For seat objects, instead of calculating exact yaw, describe which wall direction they face: "facing_front" (toward camera), "facing_back" (away from camera), "facing_left", or "facing_right". Use this to determine if chairs face their nearby table. Map these to yaw_deg as: facing_front=0, facing_right=90, facing_back=180, facing_left=270.
+- CHAIR FACING (important): For seat objects, instead of calculating exact yaw, describe which wall direction they face: "facing_front" (toward camera), "facing_back" (away from camera), "facing_left", or "facing_right". Use this to determine if chairs face their nearby table. Map these to yaw_deg as: facing_front=0, facing_right=90, facing_back=180, facing_left=270. If a nearby table variant is "high", pick seat.variant="stool" and face it toward that table.
 - For non-seat furniture (sofas/beds): yaw_deg = 0 means the piece faces +Z (toward the camera/front wall); 90 faces +X (right wall), 180 faces -Z (back wall), 270 faces -X (left wall). Set yaw_deg to match the real facing in the photo.
 
 SCHEMA:
@@ -22,6 +22,7 @@ SCHEMA:
       "variant":"string|null",
       "shape":"rect|round|null",
       "color": null,
+      "length_m": 0,
       "pos":{"x":0,"z":0},
       "yaw_deg":0,
       "confidence":0
@@ -40,7 +41,8 @@ COMPONENTS (preset sizes; do NOT include size):
 - unknownObstacle: shape rect|round; variant null
 
 RULES:
-- Do NOT add size fields. Copy positions and yaw as inferred; variants required for all except unknownObstacle.
+- For table objects include length_m (top long side) in meters when visible; if unsure estimate (0.6–2.4m).
+- Do NOT add other size fields. Copy positions and yaw as inferred; variants required for all except unknownObstacle.
 - Color: include a hex/int color if reasonably confident; else null.
 - Room: w,d in 3–10m; h in 2.2–4m; if unsure, guess and explain in assumptions.
 

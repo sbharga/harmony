@@ -6,9 +6,16 @@ import shutil
 import json
 import mimetypes
 
-from google import genai as google_genai
-from google.genai import types as genai_types
-import anthropic
+try:
+    from google import genai as google_genai
+    from google.genai import types as genai_types
+except ImportError:
+    google_genai = None
+    genai_types = None
+try:
+    import anthropic
+except ImportError:
+    anthropic = None  # Graceful fallback when SDK isn't installed
 
 from src import schemas
 from src import models
@@ -152,6 +159,8 @@ async def generate_json(design_id: str, db: Session = Depends(get_db), current_u
     design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
     if not design:
         raise HTTPException(status_code=404, detail="Design not found")
+    if google_genai is None or genai_types is None:
+        raise HTTPException(status_code=503, detail="Google GenAI SDK not installed. Run `pip install google-genai` inside backend venv.")
 
     # Locate uploaded images
     file_6ft = db.query(models.DesignFile).filter(
@@ -241,6 +250,9 @@ async def generate_3d(design_id: str, db: Session = Depends(get_db), current_use
     if not design:
         raise HTTPException(status_code=404, detail="Design not found")
 
+    if anthropic is None:
+        raise HTTPException(status_code=503, detail="Anthropic SDK not installed. Run `pip install anthropic` inside backend venv.")
+
     # Load raw layout produced by Stage 2
     raw_file = db.query(models.DesignFile).filter(
         models.DesignFile.design_id == design_id,
@@ -299,6 +311,20 @@ async def generate_3d(design_id: str, db: Session = Depends(get_db), current_use
     with open(html_path, "w") as f:
         f.write(html_content)
     save_design_file(db, design_id, "render_3d", f"/api/{html_path}")
+
+    # Heatmap for original layout
+    heatmap = build_heatmap(spec)
+    if heatmap:
+        heatmap_path = f"{upload_dir}/heatmap_original.json"
+        with open(heatmap_path, "w") as f:
+            json.dump(heatmap, f, indent=2)
+        save_design_file(db, design_id, "heatmap_original_json", f"/api/{heatmap_path}")
+        # Also embed a version with overlay for the original render
+        html_heatmap_content = render_html(spec, heatmap=heatmap)
+        html_heatmap_path = f"{upload_dir}/render_3d_with_heatmap.html"
+        with open(html_heatmap_path, "w") as f:
+            f.write(html_heatmap_content)
+        save_design_file(db, design_id, "render_3d_heatmap", f"/api/{html_heatmap_path}")
 
     db.refresh(design)
     return design
