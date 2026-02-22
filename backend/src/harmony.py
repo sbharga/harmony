@@ -43,7 +43,7 @@ PRESETS = {
         "side":      {"w": 0.5,  "d": 0.5},
         "dining":    {"w": 1.6,  "d": 0.9},
         "console":   {"w": 1.2,  "d": 0.35},
-        "high":      {"w": 0.7,  "d": 0.7},
+        "high":      {"w": 1.6,  "d": 0.9},
     },
     "storageunit": {
         "dresser_low":  {"w": 1.2, "d": 0.45},
@@ -729,10 +729,59 @@ def _interior_candidates(room, step=0.4):
     return spots
 
 
-def _candidates_for(obj, room):
+def _find_nearest_table(pos, objects):
+    """Find the nearest table object to a given position."""
+    nearest = None
+    min_dist = float("inf")
+    for obj in objects:
+        obj_type = (obj.get("type") or "").lower()
+        obj_variant = obj.get("variant") or ""
+        # Check if it's a table (dining or high tables for chairs to face)
+        if obj_type == "table" and obj_variant in ("dining", "high", "desk", "coffee"):
+            obj_pos = obj.get("pos") or {}
+            ox, oz = obj_pos.get("x", 0), obj_pos.get("z", 0)
+            dist = math.hypot(pos["x"] - ox, pos["z"] - oz)
+            if dist < min_dist:
+                min_dist = dist
+                nearest = obj
+    return nearest
+
+
+def _yaw_to_face_target(from_pos, to_pos):
+    """Calculate yaw_deg to face from from_pos toward to_pos."""
+    dx = to_pos["x"] - from_pos["x"]
+    dz = to_pos["z"] - from_pos["z"]
+    if abs(dx) < 1e-6 and abs(dz) < 1e-6:
+        return 0  # Same position, default to 0
+    angle_rad = math.atan2(dx, dz)
+    yaw = angle_rad / DEG2RAD
+    # Snap to nearest 90-degree increment
+    return round(yaw / 90) * 90
+
+
+def _candidates_for(obj, room, all_objects=None):
     if _is_large_item(obj):
         dims = _dims_for(obj)
         return _wall_candidates(room, dims)
+
+    # For seats (chairs), generate candidates that face nearby tables
+    obj_type = (obj.get("type") or "").lower()
+    if obj_type == "seat" and all_objects:
+        base_candidates = _interior_candidates(room)
+        # For each candidate position, adjust yaw to face nearest table
+        enhanced_candidates = []
+        for cand in base_candidates:
+            nearest_table = _find_nearest_table(cand["pos"], all_objects)
+            if nearest_table:
+                table_pos = nearest_table.get("pos") or {}
+                # Calculate yaw to face the table
+                yaw = _yaw_to_face_target(cand["pos"], table_pos)
+                enhanced_candidates.append({"pos": cand["pos"], "yaw_deg": yaw % 360})
+            else:
+                # No table nearby, keep original candidate
+                enhanced_candidates.append(cand)
+        return enhanced_candidates
+
     return _interior_candidates(room)
 
 
@@ -765,7 +814,7 @@ def optimize_layout(spec: dict, passes: int = 6) -> tuple[dict, float]:
             if (obj.get("type") or "").lower() == "pillar":
                 continue
 
-            candidates = _candidates_for(obj, working["room"])
+            candidates = _candidates_for(obj, working["room"], working["objects"])
             best_local_delta = 0.0
             best_local_spec = None
 
