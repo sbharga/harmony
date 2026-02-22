@@ -16,73 +16,73 @@ export default function DesignModal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-white/90 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
             ></div>
 
-            <div className="relative bg-white border-8 border-black w-full max-w-lg p-8 shadow-[16px_16px_0_0_#000]">
-                <h3 className="text-4xl font-black uppercase text-black mb-8 tracking-tighter border-b-8 border-black pb-4">
-                    {editingDesign ? 'EDIT DESIGN' : 'NEW CREATION'}
+            <div className="relative bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-lg p-8 shadow-2xl text-white transform transition-all scale-100 opacity-100">
+                <h3 className="text-2xl font-semibold mb-6 tracking-tight">
+                    {editingDesign ? 'Edit Design' : 'New Creation'}
                 </h3>
 
-                <form onSubmit={onSave} className="space-y-6">
+                <form onSubmit={onSave} className="space-y-5">
                     <div>
-                        <label className="block text-xl font-black uppercase text-black mb-3">
-                            DESIGN NAME <span className="text-black">*</span>
+                        <label className="block text-sm font-medium text-neutral-400 mb-2">
+                            Design Name <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"
                             required
                             value={designName}
                             onChange={(e) => setDesignName(e.target.value)}
-                            className="w-full bg-white border-4 border-black text-black font-bold uppercase px-4 py-4 focus:outline-none focus:ring-0 placeholder-gray-300 text-xl"
-                            placeholder="TITLE"
+                            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg text-white font-medium px-4 py-3 focus:outline-none focus:ring-1 focus:ring-neutral-500 focus:border-neutral-500 placeholder-neutral-600 transition-colors"
+                            placeholder="Project Title"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xl font-black uppercase text-black mb-3">
-                            DESCRIPTION
+                        <label className="block text-sm font-medium text-neutral-400 mb-2">
+                            Description
                         </label>
                         <textarea
                             value={designDescription}
                             onChange={(e) => setDesignDescription(e.target.value)}
-                            className="w-full bg-white border-4 border-black text-black font-bold uppercase px-4 py-4 focus:outline-none focus:ring-0 min-h-[140px] resize-y placeholder-gray-300 text-xl"
-                            placeholder="DETAILS..."
+                            className="w-full bg-neutral-950 border border-neutral-800 rounded-lg text-white font-medium px-4 py-3 focus:outline-none focus:ring-1 focus:ring-neutral-500 focus:border-neutral-500 min-h-[120px] resize-y placeholder-neutral-600 transition-colors"
+                            placeholder="Add details about your design..."
                         />
                     </div>
 
-                    <div className="pt-8 flex flex-col sm:flex-row justify-end gap-6 border-t-8 border-black mt-8">
+                    <div className="pt-6 flex flex-col sm:flex-row justify-end gap-3 mt-6">
                         {editingDesign && (
                             <button
                                 type="button"
                                 onClick={onDelete}
                                 disabled={isDeleting || isSaving}
-                                className="px-6 py-4 bg-white text-black border-4 border-black font-black uppercase hover:bg-black hover:text-white transition-none disabled:opacity-50 w-full sm:w-auto text-center text-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0_0_#000] sm:mr-auto flex items-center justify-center gap-3"
+                                className="px-5 py-2.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 w-full sm:w-auto text-center sm:mr-auto flex items-center justify-center gap-2"
                             >
                                 {isDeleting && (
-                                    <div className="w-5 h-5 border-4 border-current border-t-transparent animate-spin pointer-events-none"></div>
+                                    <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full"></div>
                                 )}
-                                DELETE
+                                Delete
                             </button>
                         )}
                         <button
                             type="button"
                             onClick={onClose}
                             disabled={isSaving || isDeleting}
-                            className="px-6 py-4 bg-white text-black border-4 border-black font-black uppercase hover:bg-black hover:text-white transition-none disabled:opacity-50 w-full sm:w-auto text-center text-xl shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0_0_#000]"
+                            className="px-5 py-2.5 bg-transparent text-neutral-300 font-medium rounded-lg hover:text-white hover:bg-neutral-800 transition-colors disabled:opacity-50 w-full sm:w-auto text-center"
                         >
-                            CANCEL
+                            Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSaving || isDeleting || !designName.trim()}
-                            className="px-8 py-4 bg-black text-white border-4 border-black font-black uppercase hover:bg-white hover:text-black transition-none disabled:opacity-50 w-full sm:w-auto text-center flex items-center justify-center gap-3 shadow-[6px_6px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[2px_2px_0_0_#000] text-xl"
+                            className="px-6 py-2.5 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50 w-full sm:w-auto text-center flex items-center justify-center gap-2"
                         >
                             {isSaving && (
-                                <div className="w-5 h-5 border-4 border-current border-t-transparent animate-spin pointer-events-none"></div>
+                                <div className="w-4 h-4 border-2 border-current border-t-transparent animate-spin rounded-full"></div>
                             )}
-                            {editingDesign ? 'SAVE' : 'CREATE'}
+                            {editingDesign ? 'Save Changes' : 'Create'}
                         </button>
                     </div>
                 </form>

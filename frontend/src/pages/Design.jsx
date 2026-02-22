@@ -175,28 +175,31 @@ export default function Design() {
     };
 
     return (
-        <div className="h-screen overflow-hidden bg-white text-black font-mono flex flex-col">
-            <nav className="border-b-4 border-black bg-white sticky top-0 z-50 flex-shrink-0">
+        <div className="h-screen overflow-hidden bg-neutral-950 text-white flex flex-col">
+            <nav className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-50 flex-shrink-0">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="bg-black text-white border-2 border-black px-4 py-2 font-black uppercase hover:bg-white hover:text-black transition-none shadow-[4px_4px_0_0_#000]"
+                            className="text-sm font-medium text-neutral-400 hover:text-purple-400 transition-colors flex items-center gap-2"
                         >
-                            &larr; BACK
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Back to Designs
                         </button>
-                        <h1 className="text-2xl font-black uppercase text-black tracking-tighter hidden sm:block">
-                            {design?.name || 'LOADING...'}
+                        <h1 className="text-lg font-semibold text-white tracking-tight hidden sm:block">
+                            {design?.name || 'Loading...'}
                         </h1>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             {regenHandler && (
                                 <button
                                     onClick={regenHandler}
                                     disabled={isProcessing}
                                     title="Regenerate"
-                                    className={`w-8 h-8 flex items-center justify-center border-2 border-black transition-none ${isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-black hover:text-white'}`}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center border border-neutral-800 transition-colors ${isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-neutral-800 text-neutral-400 hover:text-white'}`}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={isProcessing ? 'animate-spin' : ''}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isProcessing ? 'animate-spin' : ''}>
                                         <path d="M21 2v6h-6" />
                                         <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
                                         <path d="M3 22v-6h6" />
@@ -204,17 +207,17 @@ export default function Design() {
                                     </svg>
                                 </button>
                             )}
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3">
                                 {[1, 2, 3, 4].map(stage => (
                                     <button
                                         key={stage}
                                         onClick={() => stage <= maxStage ? setCurrentStage(stage) : null}
                                         disabled={stage > maxStage}
-                                        className={`rounded-full transition-all ${currentStage === stage
-                                                ? 'w-4 h-4 bg-black'
-                                                : stage <= maxStage
-                                                    ? 'w-2.5 h-2.5 bg-black opacity-40 hover:opacity-70 cursor-pointer'
-                                                    : 'w-2.5 h-2.5 bg-black opacity-15 cursor-not-allowed'
+                                        className={`rounded-full transition-all duration-300 ${currentStage === stage
+                                            ? 'w-2 h-2 bg-purple-500 ring-4 ring-purple-500/20'
+                                            : stage <= maxStage
+                                                ? 'w-2 h-2 bg-neutral-600 hover:bg-neutral-400 cursor-pointer'
+                                                : 'w-2 h-2 bg-neutral-800 cursor-not-allowed'
                                             }`}
                                     />
                                 ))}
@@ -229,24 +232,30 @@ export default function Design() {
                     <button
                         onClick={handlePrev}
                         disabled={currentStage === 1 || isProcessing}
-                        className={`hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 items-center justify-center text-2xl font-black border-4 border-black bg-white transition-none ${currentStage === 1 || isProcessing ? 'opacity-20 cursor-not-allowed' : 'hover:bg-black hover:text-white shadow-[4px_4px_0_0_#000]'}`}
+                        className={`hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-300 transition-all ${currentStage === 1 || isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-neutral-800 hover:text-purple-400 hover:border-purple-500/30 hover:scale-105'}`}
                     >
-                        &larr;
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <button
                         onClick={handleNext}
                         disabled={!canGoNext || isProcessing}
-                        className={`hidden lg:flex fixed right-4 top-1/2 -translate-y-1/2 z-50 w-12 h-12 items-center justify-center text-2xl font-black border-4 border-black bg-white transition-none ${!canGoNext || isProcessing ? 'opacity-20 cursor-not-allowed' : 'hover:bg-black hover:text-white shadow-[4px_4px_0_0_#000]'}`}
+                        className={`hidden lg:flex fixed right-6 top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full items-center justify-center bg-neutral-900/80 backdrop-blur-md border border-neutral-800 text-neutral-300 transition-all ${!canGoNext || isProcessing ? 'opacity-30 cursor-not-allowed' : 'hover:bg-neutral-800 hover:text-purple-400 hover:border-purple-500/30 hover:scale-105'}`}
                     >
-                        &rarr;
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                     </button>
                 </>
             )}
 
-            <main className="py-4 px-4 flex-1 min-h-0 overflow-hidden w-full flex flex-col items-center relative">
+            <main className="py-6 px-4 flex-1 min-h-0 overflow-hidden w-full flex flex-col items-center relative">
                 {error ? (
-                    <div className="border-4 border-black p-8 bg-black text-white text-2xl font-black uppercase shadow-[16px_16px_0_0_#000] self-center mt-20">
-                        {error}
+                    <div className="w-full max-w-lg mt-20 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-6 text-center shadow-2xl">
+                        <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-white mb-2">Failed to load</h3>
+                        <p className="text-sm">{error}</p>
                     </div>
                 ) : design ? (
                     <div className="w-full max-w-5xl h-full flex overflow-hidden">
@@ -254,7 +263,7 @@ export default function Design() {
                     </div>
                 ) : (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="w-32 h-32 border-8 border-black border-t-transparent animate-spin"></div>
+                        <div className="w-8 h-8 flex items-center justify-center border-2 border-neutral-800 border-t-purple-500 rounded-full animate-spin"></div>
                     </div>
                 )}
             </main>

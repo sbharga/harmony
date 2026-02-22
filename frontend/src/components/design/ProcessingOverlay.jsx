@@ -1,9 +1,17 @@
 export default function ProcessingOverlay() {
     return (
-        <div className="w-full flex-1 border-8 border-black p-12 bg-white flex flex-col items-center justify-center shadow-[24px_24px_0_0_#000] relative overflow-hidden">
-            <div className="absolute inset-0 bg-[linear-gradient(45deg,#000_25%,transparent_25%,transparent_75%,#000_75%,#000_100%),linear-gradient(45deg,#000_25%,white_25%,white_75%,#000_75%,#000_100%)] bg-[size:20px_20px] opacity-10 animate-[pulse_2s_ease-in-out_infinite]"></div>
-            <h2 className="text-6xl font-black uppercase tracking-tighter mix-blend-difference text-white z-10 animate-bounce">PROCESSING</h2>
-            <div className="w-32 h-32 border-8 border-black border-t-transparent animate-spin mt-10 z-10"></div>
+        <div className="w-full flex-1 border border-neutral-800 rounded-2xl bg-neutral-900 flex flex-col items-center justify-center shadow-2xl relative overflow-hidden backdrop-blur-sm">
+            {/* Subtle glow effect */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/5 rounded-full blur-[100px] animate-pulse"></div>
+
+            <div className="flex flex-col items-center z-10 space-y-8">
+                <div className="relative flex items-center justify-center">
+                    <div className="w-16 h-16 border-4 border-neutral-800 border-t-white rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 w-16 h-16 border-4 border-white/10 rounded-full blur-sm animate-pulse"></div>
+                </div>
+
+                <h2 className="text-xl font-medium tracking-widest text-white/90 animate-pulse">PROCESSING</h2>
+            </div>
         </div>
     );
 }
