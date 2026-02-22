@@ -188,7 +188,7 @@ async def generate_json(design_id: str, db: Session = Depends(get_db), current_u
     try:
         client_gemini = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         response = client_gemini.models.generate_content(
-            model="gemini-2.5-flash",
+            model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
             contents=[ENVIRONMENT_PROMPT, img_6ft_part, img_1ft_part],
             config=genai_types.GenerateContentConfig(
                 response_mime_type="application/json",
@@ -260,8 +260,8 @@ async def generate_3d(design_id: str, db: Session = Depends(get_db), current_use
     try:
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=4096,
+            model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6"),
+            max_tokens=int(os.getenv("ANTHROPIC_MAX_TOKENS", "4096")),
             messages=[
                 {
                     "role": "user",
