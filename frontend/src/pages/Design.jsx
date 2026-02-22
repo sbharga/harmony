@@ -34,13 +34,6 @@ export default function Design() {
 
     const [jsonContent, setJsonContent] = useState(null);
 
-    const resultsFile = design?.files?.find(f => f.file_type === 'results_json');
-    useEffect(() => {
-        if (resultsFile) {
-            fetch(resultsFile.file_path).then(res => res.json()).then(data => setJsonContent(data)).catch(console.error);
-        }
-    }, [resultsFile]);
-
     const fetchDesign = async () => {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/login'); return; }
@@ -57,6 +50,15 @@ export default function Design() {
             const max = getMaxStage(data.files);
             setMaxStage(max);
             if (!design || currentStage > max) setCurrentStage(max);
+            const rf = data.files?.find(f => f.file_type === 'results_json');
+            if (rf) {
+                fetch(rf.file_path)
+                    .then(res => res.json())
+                    .then(json => setJsonContent(json))
+                    .catch(console.error);
+            } else {
+                setJsonContent(null);
+            }
         } catch (err) {
             setError(err.message);
         }
@@ -120,6 +122,17 @@ export default function Design() {
         } catch (e) { console.error(e); }
         finally { setIsProcessing(false); }
     };
+
+    // Auto-generate when entering a stage that has no cached result
+    useEffect(() => {
+        if (!design || isProcessing) return;
+        const hasResults = design.files?.some(f => f.file_type === 'results_json');
+        const has3D = design.files?.some(f => f.file_type === 'render_3d');
+        const hasReorg = design.files?.some(f => f.file_type === 'reorganized_3d');
+        if (currentStage === 2 && !hasResults) handleGenerateJSON();
+        else if (currentStage === 3 && !has3D) handleGenerate3D();
+        else if (currentStage === 4 && !hasReorg) handleGenerateReorganized();
+    }, [currentStage, design]);
 
     // Right arrow: on stage 1 triggers submit if files selected, else navigates
     const canGoNext = currentStage === 1
