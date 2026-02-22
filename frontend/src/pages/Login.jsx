@@ -81,7 +81,7 @@ export default function Login() {
                         type="submit"
                         className="w-full py-4 px-4 bg-black text-white font-black uppercase border-4 border-black hover:bg-white hover:text-black transition-none text-xl shadow-[8px_8px_0_0_#000] hover:translate-y-1 hover:translate-x-1 hover:shadow-[4px_4px_0_0_#000]"
                     >
-                        Sign In
+                        SIGN IN
                     </button>
 
                     <p className="text-center text-black font-black text-sm uppercase mt-6 p-4 border-2 border-black bg-white">

@@ -149,10 +149,10 @@ async def generate_json(design_id: str, db: Session = Depends(get_db), current_u
     json_path = f"{upload_dir}/results.json"
     dummy_data = {
         "objects": [
-            {"id": 1, "name": "sofa", "x": 2.5, "y": 0, "z": 1.5, "confidence": 0.95},
-            {"id": 2, "name": "coffee table", "x": 2.5, "y": 0, "z": 3.0, "confidence": 0.88},
-            {"id": 3, "name": "tv stand", "x": 2.5, "y": 0, "z": 5.0, "confidence": 0.91},
-            {"id": 4, "name": "potted plant", "x": 0.5, "y": 0, "z": 0.5, "confidence": 0.76}
+            {"id": 1, "name": "sofa", "position": {"x": 2.5, "y": 0, "z": 1.5}, "confidence": 0.95},
+            {"id": 2, "name": "coffee table", "position": {"x": 2.5, "y": 0, "z": 3.0}, "confidence": 0.88},
+            {"id": 3, "name": "tv stand", "position": {"x": 2.5, "y": 0, "z": 5.0}, "confidence": 0.91},
+            {"id": 4, "name": "potted plant", "position": {"x": 0.5, "y": 0, "z": 0.5}, "confidence": 0.76}
         ],
         "room_dimensions": {"width": 5.0, "length": 6.0, "height": 3.0}
     }
