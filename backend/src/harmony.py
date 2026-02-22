@@ -526,6 +526,92 @@ def compute_harmony(spec: dict) -> float:
 
     return 100.0 * max(0.0, min(1.0, base))
 
+def compute_harmony_breakdown(spec: dict) -> dict:
+    """Return harmony score with per-metric breakdown (each value 0–100)."""
+    room = spec.get("room") or {}
+    _empty = {"score": 0.0, "breakdown": {"open_space": 0.0, "clearance": 0.0, "traversability": 0.0, "wall_placement": 0.0, "orientation": 0.0, "zone_coherence": 0.0}}
+    if not room.get("w") or not room.get("d"):
+        return _empty
+
+    objects = spec.get("objects") or []
+    rects = [_rect_from_item(o) for o in objects]
+    A = room["w"] * room["d"]
+
+    base_grid = _build_grid(room, rects, 0.25)
+
+    open_region = _largest_open_region(base_grid)
+    clear = _clear_score(rects, room, 0.25)
+
+    anchors = spec.get("anchors") or {}
+    door = anchors.get("door") or {}
+    door_x = door.get("x") or room["w"] / 2
+    door_z = door.get("z") or 0.0
+    start = {"x": door_x, "z": door_z + 0.05}
+    targets = _select_targets(objects)
+
+    trav_scores = []
+    for tgt in targets:
+        path = _shortest_path(base_grid, start, {"x": tgt.get("pos", {}).get("x", 0), "z": tgt.get("pos", {}).get("z", 0)})
+        m = _path_metrics(path, rects)
+        straight = math.hypot(tgt.get("pos", {}).get("x", 0) - start["x"], tgt.get("pos", {}).get("z", 0) - start["z"])
+        et = 0.0 if m["length"] == float("inf") else straight / m["length"]
+        wnorm = max(0.0, min(1.0, m["min_clear"] / 0.45))
+        trav_scores.append(et * wnorm)
+    trav = sum(trav_scores) / len(trav_scores) if trav_scores else 0.5
+
+    wall_hug = _wall_hug_score(rects, objects, room)
+    facing = _facing_score(rects, objects, room, anchors)
+    zone_cohere = _zone_cohere_score(rects, objects)
+    adj_bonus = _adjacency_bonus(rects, objects)
+
+    # Penalties
+    a_overlap = 0.0
+    for i in range(len(rects)):
+        for j in range(i + 1, len(rects)):
+            a_overlap += _rect_intersection_area(rects[i], rects[j])
+
+    a_oob = sum(_inside_room(r, room) for r in rects)
+
+    door_w = door.get("w") or 0.9
+    D = {"cx": door_x, "cz": door_z + 0.45, "w": door_w, "d": 0.9, "yaw": 0.0}
+    door_blocked_area = sum(_rect_intersection_area(D, r) for r in rects)
+    door_blocked = door_blocked_area / (D["w"] * D["d"]) if D["w"] * D["d"] else 0.0
+
+    cluster_accum = 0.0; pair_count = 0
+    for i in range(len(rects)):
+        for j in range(i + 1, len(rects)):
+            c = _clearance(rects[i], rects[j])
+            if c < 0.25:
+                cluster_accum += (0.25 - c) / 0.25
+            pair_count += 1
+    cluster_pen = cluster_accum / pair_count if pair_count else 0.0
+
+    pen = max(0.0, min(1.0, 5 * (a_overlap / A) + 5 * (a_oob / A) + 3 * door_blocked + 0.5 * cluster_pen))
+
+    base = (
+        0.20 * open_region
+        + 0.15 * clear
+        + 0.15 * trav
+        + 0.20 * wall_hug
+        + 0.15 * facing
+        + 0.15 * zone_cohere
+        - pen
+        + adj_bonus
+    )
+
+    total = round(100.0 * max(0.0, min(1.0, base)), 1)
+    return {
+        "score": total,
+        "breakdown": {
+            "open_space":     round(open_region * 100, 1),
+            "clearance":      round(clear * 100, 1),
+            "traversability": round(trav * 100, 1),
+            "wall_placement": round(wall_hug * 100, 1),
+            "orientation":    round(facing * 100, 1),
+            "zone_coherence": round(zone_cohere * 100, 1),
+        },
+    }
+
 # ── Heatmap generator ──────────────────────────────────────────────────────────
 
 def build_heatmap(spec: dict, step: float = 0.25) -> dict | None:

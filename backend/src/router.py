@@ -19,7 +19,7 @@ from src.prompts.environment_prompt import ENVIRONMENT_PROMPT
 from src.prompts.layout_schema import LAYOUT_SCHEMA
 from src.prompts.threejs_environment_prompt import THREEJS_ENVIRONMENT_PROMPT
 from src.prompts.threejs_html_template import render_html
-from src.harmony import compute_harmony, optimize_layout, build_heatmap
+from src.harmony import compute_harmony, optimize_layout, build_heatmap, compute_harmony_breakdown
 
 # Create the database tables
 models.Base.metadata.create_all(bind=engine)
@@ -288,6 +288,12 @@ async def generate_3d(design_id: str, db: Session = Depends(get_db), current_use
         json.dump(spec, f, indent=2)
     save_design_file(db, design_id, "spec_json", f"/api/{spec_path}")
 
+    initial_score_data = compute_harmony_breakdown(spec)
+    initial_score_path = f"{upload_dir}/initial_score.json"
+    with open(initial_score_path, "w") as f:
+        json.dump(initial_score_data, f, indent=2)
+    save_design_file(db, design_id, "initial_score_json", f"/api/{initial_score_path}")
+
     html_content = render_html(spec)
     html_path = f"{upload_dir}/render_3d.html"
     with open(html_path, "w") as f:
@@ -329,7 +335,13 @@ async def generate_reorganized(design_id: str, db: Session = Depends(get_db), cu
     optimized_spec, score = optimize_layout(spec)
     heatmap = build_heatmap(optimized_spec)
 
-    html_content = render_html(optimized_spec, harmony_score=score, heatmap=heatmap)
+    optimized_score_data = compute_harmony_breakdown(optimized_spec)
+    optimized_score_path = f"{upload_dir}/optimized_score.json"
+    with open(optimized_score_path, "w") as f:
+        json.dump(optimized_score_data, f, indent=2)
+    save_design_file(db, design_id, "optimized_score_json", f"/api/{optimized_score_path}")
+
+    html_content = render_html(optimized_spec, heatmap=heatmap)
     html_path = f"{upload_dir}/reorganized_3d.html"
     with open(html_path, "w") as f:
         f.write(html_content)
