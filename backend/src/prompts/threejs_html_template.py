@@ -220,7 +220,7 @@ const TABLE_PRESETS = {{
   side:      {{ w:0.50, d:0.50, h:0.55 }},
   dining:    {{ w:1.60, d:0.90, h:0.75 }},
   console:   {{ w:1.20, d:0.35, h:0.85 }},
-  high:      {{ w:0.70, d:0.70, h:1.75 }},
+  high:      {{ w:1.60, d:0.90, h:1.225 }},
 }};
 function makeTable(variant, color) {{
   const dims = TABLE_PRESETS[variant] || TABLE_PRESETS.side;

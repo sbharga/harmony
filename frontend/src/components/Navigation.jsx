@@ -33,7 +33,7 @@ export default function Navigation({ user, handleLogout }) {
                                     onClick={handleLogout}
                                     className="px-5 py-2 bg-cream border border-moss-pale rounded-lg hover:bg-moss-pale/50 hover:border-moss text-base font-medium transition-colors text-forest-dark cursor-pointer"
                                 >
-                                    Logout
+                                    Log out
                                 </button>
                             </>
                         ) : (

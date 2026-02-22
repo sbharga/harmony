@@ -29,10 +29,6 @@ export default function Home() {
             <main className="relative">
                 {/* Hero Section */}
                 <section className="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-24 sm:py-32 lg:py-40 flex flex-col items-center text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-moss-pale/30 text-moss border border-moss-pale/50 mb-8 max-w-fit">
-                        <span className="w-2 h-2 rounded-full bg-moss animate-pulse"></span>
-                        <span className="text-sm font-medium tracking-wide">Introducing Harmony v1.0</span>
-                    </div>
                     <h1 className="text-5xl sm:text-7xl font-bold tracking-tight text-forest-dark mb-8 leading-tight max-w-4xl">
                         Design your space with <span className="text-transparent bg-clip-text bg-gradient-to-r from-moss to-forest-dark italic">perfect balance.</span>
                     </h1>
@@ -92,7 +88,7 @@ export default function Home() {
                                 <div className="flex-1 w-full lg:w-1/2">
                                     <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-milk border border-moss-pale shadow-lg relative cursor-default hover:shadow-xl transition-shadow duration-300">
                                         <img
-                                            src="https://images.unsplash.com/photo-1618220179428-f363c46115fb?auto=format&fit=crop&q=80&w=1200"
+                                            src="https://cdn.mos.cms.futurecdn.net/m6K5YFUu7Gw4RD34TEX6aS.jpg"
                                             alt="Harmony Optimization"
                                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                                         />

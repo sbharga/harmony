@@ -61,9 +61,8 @@ export function WelcomeOverlay({ onComplete }) {
 
             <div className="wo-content">
                 <p className="wo-eyebrow">Upload &mdash; Optimize &mdash; Visualize</p>
-                <p className="wo-prefix">Find</p>
                 <h1 className="wo-title">
-                    Harmony<em>.</em>
+                    Harmony
                 </h1>
                 <p className="wo-subtitle">Click &amp; swipe to continue</p>
             </div>
