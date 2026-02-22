@@ -4,3 +4,6 @@ python-multipart
 pydantic
 sqlalchemy
 passlib[argon2]
+google-genai
+anthropic
+python-dotenv

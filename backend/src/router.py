@@ -4,12 +4,22 @@ from sqlalchemy.orm import Session, joinedload
 import os
 import shutil
 import json
+import mimetypes
+
+from google import genai as google_genai
+from google.genai import types as genai_types
+import anthropic
 
 from src import schemas
 from src import models
 from src.database import engine
 from src.dependencies import get_db, get_current_user, get_user
 from src.security import verify_password, get_password_hash
+from src.prompts.environment_prompt import ENVIRONMENT_PROMPT
+from src.prompts.layout_schema import LAYOUT_SCHEMA
+from src.prompts.threejs_environment_prompt import THREEJS_ENVIRONMENT_PROMPT
+from src.prompts.threejs_html_template import render_html
+from src.harmony import compute_harmony, optimize_layout, build_heatmap
 
 # Create the database tables
 models.Base.metadata.create_all(bind=engine)
@@ -142,26 +152,86 @@ async def generate_json(design_id: str, db: Session = Depends(get_db), current_u
     design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
     if not design:
         raise HTTPException(status_code=404, detail="Design not found")
-        
+
+    # Locate uploaded images
+    file_6ft = db.query(models.DesignFile).filter(
+        models.DesignFile.design_id == design_id,
+        models.DesignFile.file_type == "image_6ft"
+    ).first()
+    file_1ft = db.query(models.DesignFile).filter(
+        models.DesignFile.design_id == design_id,
+        models.DesignFile.file_type == "image_1ft"
+    ).first()
+    if not file_6ft or not file_1ft:
+        raise HTTPException(status_code=400, detail="Stage 1 images not uploaded yet")
+
+    # Strip /api/ prefix to get disk paths
+    path_6ft = file_6ft.file_path.removeprefix("/api/")
+    path_1ft = file_1ft.file_path.removeprefix("/api/")
+
+    try:
+        with open(path_6ft, "rb") as f:
+            img_6ft_bytes = f.read()
+        with open(path_1ft, "rb") as f:
+            img_1ft_bytes = f.read()
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Could not read image files: {e}")
+
+    def _mime(path):
+        mt, _ = mimetypes.guess_type(path)
+        return mt or "image/jpeg"
+
+    img_6ft_part = genai_types.Part.from_bytes(data=img_6ft_bytes, mime_type=_mime(path_6ft))
+    img_1ft_part = genai_types.Part.from_bytes(data=img_1ft_bytes, mime_type=_mime(path_1ft))
+
+    # Call Gemini
+    try:
+        client_gemini = google_genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        response = client_gemini.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[ENVIRONMENT_PROMPT, img_6ft_part, img_1ft_part],
+            config=genai_types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=LAYOUT_SCHEMA,
+            ),
+        )
+        raw_layout = json.loads(response.text)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Gemini API error: {e}")
+
     upload_dir = f"uploads/{design_id}"
     os.makedirs(upload_dir, exist_ok=True)
-    
-    json_path = f"{upload_dir}/results.json"
-    dummy_data = {
+
+    # Save raw layout
+    raw_path = f"{upload_dir}/layout_raw.json"
+    with open(raw_path, "w") as f:
+        json.dump(raw_layout, f, indent=2)
+    save_design_file(db, design_id, "layout_raw", f"/api/{raw_path}")
+
+    # Transform for Stage 2 display
+    room = raw_layout.get("room") or {}
+    frontend_json = {
+        "room_dimensions": {
+            "width":  room.get("w", 0),
+            "length": room.get("d", 0),
+            "height": room.get("h", 0),
+        },
         "objects": [
-            {"id": 1, "name": "sofa", "position": {"x": 2.5, "y": 0, "z": 1.5}, "confidence": 0.95},
-            {"id": 2, "name": "coffee table", "position": {"x": 2.5, "y": 0, "z": 3.0}, "confidence": 0.88},
-            {"id": 3, "name": "tv stand", "position": {"x": 2.5, "y": 0, "z": 5.0}, "confidence": 0.91},
-            {"id": 4, "name": "potted plant", "position": {"x": 0.5, "y": 0, "z": 0.5}, "confidence": 0.76}
+            {
+                "name": f'{o["type"]} {o.get("variant","")}'.strip(),
+                "label": o["type"],
+                "position": {"x": o["pos"]["x"], "y": 0, "z": o["pos"]["z"]},
+                "confidence": o.get("confidence", 1.0),
+            }
+            for o in raw_layout.get("objects", [])
         ],
-        "room_dimensions": {"width": 5.0, "length": 6.0, "height": 3.0}
     }
-    
+
+    json_path = f"{upload_dir}/results.json"
     with open(json_path, "w") as f:
-        json.dump(dummy_data, f, indent=4)
-        
+        json.dump(frontend_json, f, indent=2)
     save_design_file(db, design_id, "results_json", f"/api/{json_path}")
-    
+
     db.refresh(design)
     return design
 
@@ -170,29 +240,60 @@ async def generate_3d(design_id: str, db: Session = Depends(get_db), current_use
     design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
     if not design:
         raise HTTPException(status_code=404, detail="Design not found")
-        
+
+    # Load raw layout produced by Stage 2
+    raw_file = db.query(models.DesignFile).filter(
+        models.DesignFile.design_id == design_id,
+        models.DesignFile.file_type == "layout_raw"
+    ).first()
+    if not raw_file:
+        raise HTTPException(status_code=400, detail="Raw layout not found — run generate_json first")
+
+    raw_path = raw_file.file_path.removeprefix("/api/")
+    try:
+        with open(raw_path) as f:
+            raw_layout = json.load(f)
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Could not read layout file: {e}")
+
+    # Call Claude to validate / normalise the layout
+    try:
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=4096,
+            messages=[
+                {
+                    "role": "user",
+                    "content": THREEJS_ENVIRONMENT_PROMPT + "\n\nInput JSON:\n" + json.dumps(raw_layout),
+                }
+            ],
+        )
+        response_text = message.content[0].text.strip()
+        # Strip markdown fences if present
+        if response_text.startswith("```"):
+            response_text = response_text.split("```", 2)[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+            response_text = response_text.rsplit("```", 1)[0]
+        spec = json.loads(response_text.strip())
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Claude API error: {e}")
+
     upload_dir = f"uploads/{design_id}"
     os.makedirs(upload_dir, exist_ok=True)
-    
-    html_path = f"{upload_dir}/render_3d.html"
-    
-    html_content = """<!DOCTYPE html>
-<html>
-<head>
-    <style>body { margin: 0; overflow: hidden; background: #000; color: #0f0; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; text-align: center; }</style>
-</head>
-<body>
-    <h1>LOADING 3D ENGINE...</h1>
-    <p>INITIAL RENDERING COMPLETE</p>
-    <div style="width: 200px; height: 200px; border: 4px solid #0f0; margin-top: 20px; animation: spin 4s linear infinite;"></div>
-    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
-</body>
-</html>"""
 
+    spec_path = f"{upload_dir}/spec.json"
+    with open(spec_path, "w") as f:
+        json.dump(spec, f, indent=2)
+    save_design_file(db, design_id, "spec_json", f"/api/{spec_path}")
+
+    html_content = render_html(spec)
+    html_path = f"{upload_dir}/render_3d.html"
     with open(html_path, "w") as f:
         f.write(html_content)
-        
     save_design_file(db, design_id, "render_3d", f"/api/{html_path}")
+
     db.refresh(design)
     return design
 
@@ -201,31 +302,38 @@ async def generate_reorganized(design_id: str, db: Session = Depends(get_db), cu
     design = db.query(models.Design).filter(models.Design.id == design_id, models.Design.owner_id == current_user.id).first()
     if not design:
         raise HTTPException(status_code=404, detail="Design not found")
-        
+
     upload_dir = f"uploads/{design_id}"
     os.makedirs(upload_dir, exist_ok=True)
-    
-    html_path = f"{upload_dir}/reorganized_3d.html"
-    
-    html_content = """<!DOCTYPE html>
-<html>
-<head>
-    <style>body { margin: 0; overflow: hidden; background: #fff; color: #000; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; text-align: center; border: 16px solid #000; box-sizing: border-box; }</style>
-</head>
-<body>
-    <h1 style="font-size: 3rem; font-weight: 900; text-transform: uppercase;">REORGANIZED</h1>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; width: 300px; height: 300px; border: 8px solid #000; padding: 10px;">
-        <div style="background: #000;"></div>
-        <div style="border: 4px solid #000;"></div>
-        <div style="border: 4px solid #000;"></div>
-        <div style="background: #000;"></div>
-    </div>
-</body>
-</html>"""
 
+    # Prefer Claude-refined spec, fall back to raw layout
+    spec_file = db.query(models.DesignFile).filter(
+        models.DesignFile.design_id == design_id,
+        models.DesignFile.file_type == "spec_json"
+    ).first()
+    if not spec_file:
+        spec_file = db.query(models.DesignFile).filter(
+            models.DesignFile.design_id == design_id,
+            models.DesignFile.file_type == "layout_raw"
+        ).first()
+    if not spec_file:
+        raise HTTPException(status_code=400, detail="No layout spec found — run earlier stages first")
+
+    spec_path = spec_file.file_path.removeprefix("/api/")
+    try:
+        with open(spec_path) as f:
+            spec = json.load(f)
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Could not read spec file: {e}")
+
+    optimized_spec, score = optimize_layout(spec)
+    heatmap = build_heatmap(optimized_spec)
+
+    html_content = render_html(optimized_spec, harmony_score=score, heatmap=heatmap)
+    html_path = f"{upload_dir}/reorganized_3d.html"
     with open(html_path, "w") as f:
         f.write(html_content)
-        
     save_design_file(db, design_id, "reorganized_3d", f"/api/{html_path}")
+
     db.refresh(design)
     return design

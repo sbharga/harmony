@@ -154,27 +154,30 @@ export default function Dashboard() {
 
     if (!user && !error) {
         return (
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <div className="w-8 h-8 flex items-center justify-center border-2 border-neutral-800 border-t-purple-500 rounded-full animate-spin"></div>
+            <div className="min-h-screen bg-milk flex items-center justify-center">
+                <div className="w-8 h-8 flex items-center justify-center border-2 border-moss-pale border-t-moss rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
-            <nav className="border-b border-neutral-800/60 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-40">
+        <div className="min-h-screen bg-milk text-forest-dark">
+            <nav className="border-b border-moss-pale bg-milk/80 backdrop-blur-md sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-14 items-center">
-                        <h1 className="text-xl font-bold tracking-tight text-white">
-                            Harmony<span className="text-purple-500">.</span>
-                        </h1>
+                    <div className="flex justify-between h-16 items-center">
+                        <div className="flex items-center gap-3">
+                            <img src="/harmony.png" alt="Harmony Logo" className="w-12 h-12 object-contain" />
+                            <h1 className="text-3xl font-bold tracking-tight text-forest-dark">
+                                Harmony<span className="text-moss">.</span>
+                            </h1>
+                        </div>
                         <div className="flex items-center gap-6">
                             <div className="hidden sm:flex items-center gap-3">
-                                <span className="text-neutral-400 text-sm font-medium">{user?.username}</span>
+                                <span className="text-forest-dark/80 text-base font-medium">{user?.username}</span>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="px-4 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg hover:bg-neutral-800 hover:border-neutral-700 text-sm font-medium transition-colors text-white"
+                                className="px-5 py-2 bg-cream border border-moss-pale rounded-lg hover:bg-moss-pale/50 hover:border-moss text-base font-medium transition-colors text-forest-dark"
                             >
                                 Logout
                             </button>
@@ -185,16 +188,16 @@ export default function Dashboard() {
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
                 <div className="relative z-10">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10">
                         <div>
-                            <h2 className="text-2xl font-bold text-white tracking-tight">Your Designs</h2>
-                            <p className="text-neutral-400 mt-1 text-sm">Manage your 3D creations</p>
+                            <h2 className="text-3xl font-bold text-forest-dark tracking-tight">Your Designs</h2>
+                            <p className="text-forest-dark/70 mt-2 text-base">Manage your 3D creations</p>
                         </div>
                         <button
                             onClick={() => handleOpenModal(null)}
-                            className="mt-4 sm:mt-0 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-all flex items-center gap-2 text-sm"
+                            className="mt-4 sm:mt-0 px-5 py-2.5 bg-moss text-forest-dark rounded-lg font-medium hover:bg-moss/90 transition-all flex items-center gap-2 text-base shadow-sm"
                         >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
                             New Design
@@ -203,15 +206,15 @@ export default function Dashboard() {
 
                     {isLoadingDesigns ? (
                         <div className="flex justify-center py-20">
-                            <div className="w-8 h-8 flex items-center justify-center border-2 border-neutral-800 border-t-purple-500 rounded-full animate-spin"></div>
+                            <div className="w-8 h-8 flex items-center justify-center border-2 border-moss-pale border-t-moss rounded-full animate-spin"></div>
                         </div>
                     ) : designs.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-32 text-center">
-                            <h3 className="text-lg font-semibold text-white mb-2 tracking-tight">No designs yet</h3>
-                            <p className="text-neutral-400 mb-6 max-w-sm mx-auto text-sm">Create your first design to get started.</p>
+                            <h3 className="text-xl font-semibold text-forest-dark mb-3 tracking-tight">No designs yet</h3>
+                            <p className="text-forest-dark/70 mb-8 max-w-sm mx-auto text-base">Create your first design to get started.</p>
                             <button
                                 onClick={() => handleOpenModal(null)}
-                                className="px-5 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-all text-sm"
+                                className="px-6 py-3 bg-moss text-forest-dark font-medium rounded-lg hover:bg-moss/90 transition-all text-base shadow-sm"
                             >
                                 Create Design
                             </button>
@@ -227,27 +230,27 @@ export default function Dashboard() {
                                     <div
                                         key={design.id}
                                         onClick={() => navigate(`/design/${design.id}`)}
-                                        className="group bg-neutral-900 border border-neutral-800 rounded-xl hover:border-purple-500/50 transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
+                                        className="group bg-cream border border-moss-pale rounded-xl hover:border-moss transition-all duration-300 cursor-pointer flex flex-col overflow-hidden"
                                     >
-                                        <div className="h-56 w-full relative overflow-hidden bg-neutral-950 flex items-center justify-center">
+                                        <div className="h-56 w-full relative overflow-hidden bg-milk flex items-center justify-center">
                                             {hasPreview ? (
                                                 <img src={previewFile.file_path} alt={`${design.name} preview`} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105" />
                                             ) : (
-                                                <div className="absolute inset-0 bg-gradient-to-br from-neutral-800/20 to-neutral-900 opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                <div className="absolute inset-0 bg-gradient-to-br from-moss-pale/20 to-moss-pale/50 opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             )}
 
-                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-300" />
+                                            <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-300" />
 
                                             {!hasPreview && (
-                                                <span className="relative z-10 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100">
+                                                <span className="relative z-10 bg-forest-dark/80 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium border border-moss-pale/50 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100">
                                                     Open Project
                                                 </span>
                                             )}
                                         </div>
 
-                                        <div className="p-4 flex-1 flex flex-col items-start w-full bg-neutral-900 relative z-10">
+                                        <div className="p-4 flex-1 flex flex-col items-start w-full bg-cream relative z-10">
                                             <div className="flex items-start justify-between w-full gap-3">
-                                                <h3 className="font-semibold text-white text-base truncate flex-1 min-w-0 group-hover:text-purple-400 transition-colors">
+                                                <h3 className="font-semibold text-forest-dark text-lg truncate flex-1 min-w-0 group-hover:text-moss transition-colors">
                                                     {design.name}
                                                 </h3>
                                                 <button
@@ -255,13 +258,13 @@ export default function Dashboard() {
                                                         e.stopPropagation();
                                                         handleOpenModal(design);
                                                     }}
-                                                    className="p-1.5 text-neutral-400 hover:text-white rounded-md hover:bg-neutral-800 transition-colors flex-shrink-0"
+                                                    className="p-1.5 text-forest-dark/50 hover:text-forest-dark rounded-md hover:bg-moss-pale/50 transition-colors flex-shrink-0"
                                                     title="Edit Details"
                                                 >
                                                     <PencilIcon />
                                                 </button>
                                             </div>
-                                            <p className="text-neutral-500 text-xs mt-1.5 line-clamp-2">
+                                            <p className="text-forest-dark/70 text-sm mt-1.5 line-clamp-2">
                                                 {design.description || "No description provided."}
                                             </p>
                                         </div>
