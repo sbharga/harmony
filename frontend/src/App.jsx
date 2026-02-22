@@ -14,10 +14,7 @@ function ProtectedRoute({ children }) {
 }
 
 function PublicRoute({ children }) {
-  const token = localStorage.getItem('token');
-  if (token) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Allow homepage even when logged in; only protect auth forms
   return children;
 }
 
@@ -70,4 +67,3 @@ function App() {
 }
 
 export default App
-
