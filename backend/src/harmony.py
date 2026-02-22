@@ -9,6 +9,7 @@ import random
 import copy
 
 DEG2RAD = math.pi / 180
+GRID_STEP = 0.30  # coarser grid for faster scoring/path checks
 
 PRESETS = {
     "seat": {
@@ -468,10 +469,10 @@ def compute_harmony(spec: dict) -> float:
     rects = [_rect_from_item(o) for o in objects]
     A = room["w"] * room["d"]
 
-    base_grid = _build_grid(room, rects, 0.25)
+    base_grid = _build_grid(room, rects, GRID_STEP)
 
     open_region = _largest_open_region(base_grid)
-    clear = _clear_score(rects, room, 0.25)
+    clear = _clear_score(rects, room, GRID_STEP)
 
     anchors = spec.get("anchors") or {}
     door = anchors.get("door") or {}
@@ -543,10 +544,10 @@ def compute_harmony_breakdown(spec: dict) -> dict:
     rects = [_rect_from_item(o) for o in objects]
     A = room["w"] * room["d"]
 
-    base_grid = _build_grid(room, rects, 0.25)
+    base_grid = _build_grid(room, rects, GRID_STEP)
 
     open_region = _largest_open_region(base_grid)
-    clear = _clear_score(rects, room, 0.25)
+    clear = _clear_score(rects, room, GRID_STEP)
 
     anchors = spec.get("anchors") or {}
     door = anchors.get("door") or {}
@@ -620,7 +621,7 @@ def compute_harmony_breakdown(spec: dict) -> dict:
 
 # ── Heatmap generator ──────────────────────────────────────────────────────────
 
-def build_heatmap(spec: dict, step: float = 0.25) -> dict | None:
+def build_heatmap(spec: dict, step: float = GRID_STEP) -> dict | None:
     if not spec or not spec.get("room"):
         return None
     room = spec["room"]
@@ -684,7 +685,7 @@ def build_heatmap(spec: dict, step: float = 0.25) -> dict | None:
 
 # ── Optimizer ──────────────────────────────────────────────────────────────────
 
-def _wall_candidates(room, dims, step=0.35):
+def _wall_candidates(room, dims, step=0.45):
     hw = dims["w"] / 2; hd = dims["d"] / 2
     inset = 0.05
     spots = []
@@ -712,7 +713,7 @@ def _wall_candidates(room, dims, step=0.35):
     return spots
 
 
-def _interior_candidates(room, step=0.4):
+def _interior_candidates(room, step=0.5):
     spots = []
     inset = 0.2
     rotations = [0, 90, 180, 270]
@@ -724,7 +725,7 @@ def _interior_candidates(room, step=0.4):
                 spots.append({"pos": {"x": x, "z": z}, "yaw_deg": yaw})
             z += step
         x += step
-    for _ in range(12):
+    for _ in range(6):
         spots.append({
             "pos": {
                 "x": inset + random.random() * (room["w"] - 2 * inset),
@@ -804,7 +805,7 @@ def _is_collision(rect, others):
     return False
 
 
-def optimize_layout(spec: dict, passes: int = 6) -> tuple[dict, float]:
+def optimize_layout(spec: dict, passes: int = 4) -> tuple[dict, float]:
     """
     Greedy hill-climbing optimizer.
     Returns (optimized_spec, harmony_score).
