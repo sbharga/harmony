@@ -67,6 +67,7 @@ export default function Register() {
                             <input
                                 type="text"
                                 required
+                                autoComplete="username"
                                 className="w-full px-4 py-3 bg-milk border border-moss-pale rounded-lg text-forest-dark text-lg placeholder-forest-dark/40 focus:outline-none focus:ring-1 focus:ring-moss focus:border-moss transition-all hover:bg-milk/80"
                                 placeholder="Choose a username"
                                 value={username}
@@ -79,6 +80,7 @@ export default function Register() {
                             <input
                                 type="password"
                                 required
+                                autoComplete="new-password"
                                 className="w-full px-4 py-3 bg-milk border border-moss-pale rounded-lg text-forest-dark text-lg placeholder-forest-dark/40 focus:outline-none focus:ring-1 focus:ring-moss focus:border-moss transition-all hover:bg-milk/80"
                                 placeholder="Choose a password"
                                 value={password}

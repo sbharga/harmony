@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import Navigation from '../components/Navigation';
 import { WelcomeOverlay } from '../components/WelcomeOverlay';
+import LiveDemo from '../components/LiveDemo';
 
 export default function Home() {
     const [showWelcome, setShowWelcome] = useState(false);
@@ -16,7 +17,14 @@ export default function Home() {
     const handleWelcomeComplete = () => {
         setShowWelcome(false);
         sessionStorage.setItem('hasSeenWelcome', 'true');
+        // Ensure we land at the top when overlay finishes
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     };
+
+    // Always start at top on first render (even if overlay is skipped)
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }, []);
 
     return (
         <div className="min-h-screen bg-milk text-forest-dark font-sans selection:bg-moss-pale selection:text-forest-dark relative">
@@ -44,6 +52,9 @@ export default function Home() {
                         </Link>
                     </div>
                 </section>
+
+                {/* Live Demo Section */}
+                <LiveDemo />
 
                 {/* Features Section */}
                 <section className="bg-cream py-24 sm:py-32">
