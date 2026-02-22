@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 // Helper to convert HEIC/HEIF/WEBP to JPEG for compatibility (upload + preview)
 async function normalizeImageFile(file) {
     if (!file) return null;
@@ -5,36 +6,68 @@ async function normalizeImageFile(file) {
     const needsConvert = type.includes('heic') || type.includes('heif') || type.includes('webp');
     if (!needsConvert) return file;
 
-    const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
+    try {
+        const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
 
-    const img = await new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = reject;
-        image.src = dataUrl;
-    });
+        const img = await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = reject;
+            image.src = dataUrl;
+        });
 
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth || img.width;
-    canvas.height = img.naturalHeight || img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
 
-    const blob = await new Promise((resolve, reject) => {
-        canvas.toBlob(b => b ? resolve(b) : reject(new Error('Conversion failed')), 'image/jpeg', 0.92);
-    });
+        const blob = await new Promise((resolve, reject) => {
+            canvas.toBlob(b => b ? resolve(b) : reject(new Error('Conversion failed')), 'image/jpeg', 0.92);
+        });
 
-    const newName = file.name.replace(/\.[^.]+$/, '.jpg');
-    return new File([blob], newName, { type: 'image/jpeg' });
+        const newName = file.name.replace(/\.[^.]+$/, '.jpg');
+        return new File([blob], newName, { type: 'image/jpeg' });
+    } catch (err) {
+        // If browser cannot decode HEIC/WEBP, fall back to original file so upload still proceeds
+        return file;
+    }
 }
 
 export default function Stage1Input({ image6ft, image1ft, setImage6ft, setImage1ft, file6ft, file1ft }) {
     const bothSelected = image6ft && image1ft;
+    const [preview6, setPreview6] = useState(null);
+    const [preview1, setPreview1] = useState(null);
+
+    const toUrl = (path) => {
+        if (!path) return null;
+        if (path.startsWith('http')) return path;
+        const base = import.meta.env.VITE_API_URL ?? '';
+        return `${base}${path}`;
+    };
+
+    useEffect(() => {
+        let url = null;
+        if (image6ft) url = URL.createObjectURL(image6ft);
+        else if (file6ft?.file_path) url = toUrl(file6ft.file_path);
+        setPreview6(url);
+        return () => { if (url && image6ft) URL.revokeObjectURL(url); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [image6ft, file6ft?.file_path]);
+
+    useEffect(() => {
+        let url = null;
+        if (image1ft) url = URL.createObjectURL(image1ft);
+        else if (file1ft?.file_path) url = toUrl(file1ft.file_path);
+        setPreview1(url);
+        return () => { if (url && image1ft) URL.revokeObjectURL(url); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [image1ft, file1ft?.file_path]);
 
     const handleFile = async (setter, e) => {
         const f = e.target.files?.[0];
@@ -43,17 +76,39 @@ export default function Stage1Input({ image6ft, image1ft, setImage6ft, setImage1
         setter(normalized || f);
     };
 
+    const makeDropHandlers = (setter) => {
+        const onDrop = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const f = e.dataTransfer?.files?.[0];
+            if (!f) return;
+            const normalized = await normalizeImageFile(f);
+            setter(normalized || f);
+        };
+        const onDragOver = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        return { onDrop, onDragOver };
+    };
+
+    const drop6 = makeDropHandlers(setImage6ft);
+    const drop1 = makeDropHandlers(setImage1ft);
+
     return (
         <div className="w-full h-full flex flex-col bg-cream border border-moss-pale rounded-2xl shadow-xl overflow-hidden p-6 md:p-8">
             <h2 className="text-xl font-semibold text-forest-dark mb-6 border-b border-moss-pale pb-4">
                 Input Views
             </h2>
             <div className="flex flex-col md:flex-row gap-6 w-full flex-1 min-h-0">
-                <div className="flex-1 border-2 border-dashed border-moss-pale rounded-xl bg-milk flex flex-col items-center justify-center relative cursor-pointer hover:bg-milk/80 hover:border-moss transition-all overflow-hidden group">
+                <div
+                    className="flex-1 border-2 border-dashed border-moss-pale rounded-xl bg-milk flex flex-col items-center justify-center relative cursor-pointer hover:bg-milk/80 hover:border-moss transition-all overflow-hidden group"
+                    {...drop6}
+                >
                     <h3 className="text-base font-medium text-forest-dark mb-4 z-10 opacity-80 group-hover:opacity-100 transition-opacity">6ft View</h3>
-                    {file6ft && !image6ft && (
+                    {preview6 && (
                         <div className="absolute inset-0 z-0">
-                            <img src={file6ft.file_path} className="w-full h-full object-cover opacity-30 grayscale mix-blend-overlay" />
+                            <img src={preview6} className="w-full h-full object-cover opacity-30 grayscale mix-blend-overlay" />
                         </div>
                     )}
                     <input type="file" className="absolute inset-0 opacity-0 cursor-pointer z-20" onChange={e => handleFile(setImage6ft, e)} accept="image/*" />
@@ -62,16 +117,19 @@ export default function Stage1Input({ image6ft, image1ft, setImage6ft, setImage1
                             <span className="text-xl font-semibold leading-none">{image6ft ? '✓' : '+'}</span>
                         </div>
                         <p className="font-medium text-xs text-forest-dark/70 group-hover:text-forest-dark transition-colors">
-                            {image6ft ? image6ft.name : 'Click to Upload'}
+                            {image6ft ? image6ft.name : 'Click or drop to upload'}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex-1 border-2 border-dashed border-moss-pale rounded-xl bg-milk flex flex-col items-center justify-center relative cursor-pointer hover:bg-milk/80 hover:border-moss transition-all overflow-hidden group">
+                <div
+                    className="flex-1 border-2 border-dashed border-moss-pale rounded-xl bg-milk flex flex-col items-center justify-center relative cursor-pointer hover:bg-milk/80 hover:border-moss transition-all overflow-hidden group"
+                    {...drop1}
+                >
                     <h3 className="text-base font-medium text-forest-dark mb-4 z-10 opacity-80 group-hover:opacity-100 transition-opacity">1ft View</h3>
-                    {file1ft && !image1ft && (
+                    {preview1 && (
                         <div className="absolute inset-0 z-0">
-                            <img src={file1ft.file_path} className="w-full h-full object-cover opacity-30 grayscale mix-blend-overlay" />
+                            <img src={preview1} className="w-full h-full object-cover opacity-30 grayscale mix-blend-overlay" />
                         </div>
                     )}
                     <input type="file" className="absolute inset-0 opacity-0 cursor-pointer z-20" onChange={e => handleFile(setImage1ft, e)} accept="image/*" />
@@ -80,7 +138,7 @@ export default function Stage1Input({ image6ft, image1ft, setImage6ft, setImage1
                             <span className="text-xl font-semibold leading-none">{image1ft ? '✓' : '+'}</span>
                         </div>
                         <p className="font-medium text-xs text-forest-dark/70 group-hover:text-forest-dark transition-colors">
-                            {image1ft ? image1ft.name : 'Click to Upload'}
+                            {image1ft ? image1ft.name : 'Click or drop to upload'}
                         </p>
                     </div>
                 </div>

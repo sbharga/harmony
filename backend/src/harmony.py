@@ -857,6 +857,54 @@ def optimize_layout(spec: dict, passes: int = 6) -> tuple[dict, float]:
                 improved = True
                 break
 
+        # Secondary strategy: swap positions of similar items (preserve grouping, avoid pillars)
+        if not improved:
+            movable_idxs = [i for i, o in enumerate(working["objects"])
+                            if (o.get("type") or "").lower() != "pillar"]
+            random.shuffle(movable_idxs)
+            for i in range(len(movable_idxs)):
+                for j in range(i + 1, len(movable_idxs)):
+                    a_idx, b_idx = movable_idxs[i], movable_idxs[j]
+                    a_obj = working["objects"][a_idx]
+                    b_obj = working["objects"][b_idx]
+                    # Swap only if same type to keep grouping/logical pairing
+                    if (a_obj.get("type") or "").lower() != (b_obj.get("type") or "").lower():
+                        continue
+                    swapped = copy.deepcopy(working)
+                    # swap pos and yaw only
+                    swapped["objects"][a_idx]["pos"], swapped["objects"][b_idx]["pos"] = \
+                        copy.deepcopy(b_obj.get("pos")), copy.deepcopy(a_obj.get("pos"))
+                    swapped["objects"][a_idx]["yaw_deg"], swapped["objects"][b_idx]["yaw_deg"] = \
+                        b_obj.get("yaw_deg"), a_obj.get("yaw_deg")
+                    # Validate no overlaps / bounds
+                    s_rects = [_rect_from_item(o) for o in swapped["objects"]]
+                    ok = True
+                    for r in s_rects:
+                        if (r["cx"] - r["w"]/2 < 0 or r["cz"] - r["d"]/2 < 0 or
+                                r["cx"] + r["w"]/2 > swapped["room"]["w"] or
+                                r["cz"] + r["d"]/2 > swapped["room"]["d"]):
+                            ok = False
+                            break
+                    if ok:
+                        for a in range(len(s_rects)):
+                            for b in range(a+1, len(s_rects)):
+                                if _is_collision(s_rects[a], [s_rects[b]]):
+                                    ok = False
+                                    break
+                            if not ok:
+                                break
+                    if not ok:
+                        continue
+                    score = compute_harmony(swapped)
+                    delta = score - best_score
+                    if delta > 1e-4:
+                        best_spec = swapped
+                        best_score = score
+                        improved = True
+                        break
+                if improved:
+                    break
+
         if not improved:
             break
 
