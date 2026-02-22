@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 function Placeholder({ text }) {
     return (
@@ -49,8 +49,10 @@ function ScoreBadge({ scoreData }) {
     );
 }
 
-export default function Stage4Final({ reorgFile, scoreData }) {
+export default function Stage4Final({ reorgFile, initialFile, originalHeatmapFile, scoreData }) {
     const containerRef = useRef(null);
+    const [view, setView] = useState(reorgFile ? 'optimized' : 'original');
+    const [showHeatmap, setShowHeatmap] = useState(false);
 
     const handleFullscreen = () => {
         if (containerRef.current) {
@@ -70,23 +72,68 @@ export default function Stage4Final({ reorgFile, scoreData }) {
                 Final Design
                 <div className="flex items-center gap-3">
                     <ScoreBadge scoreData={scoreData} />
-                    {reorgFile && (
-                        <button
-                            onClick={handleFullscreen}
-                            className="bg-cream hover:bg-moss transition-all text-forest-dark text-xs px-3 py-1.5 rounded-md font-medium flex items-center gap-2 border border-moss-pale hover:border-moss"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-                            </svg>
-                            Full Screen
-                        </button>
+                    {(initialFile || reorgFile) && (
+                        <div className="flex gap-2 items-center flex-wrap">
+                            {initialFile && (
+                                <button
+                                    onClick={() => setView('original')}
+                                    className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all ${
+                                        view === 'original'
+                                            ? 'bg-moss text-forest-dark border-moss'
+                                            : 'bg-cream text-forest-dark/80 border-moss-pale hover:border-moss'
+                                    }`}
+                                >
+                                    Original
+                                </button>
+                            )}
+                            {reorgFile && (
+                                <button
+                                    onClick={() => setView('optimized')}
+                                    className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all ${
+                                        view === 'optimized'
+                                            ? 'bg-moss text-forest-dark border-moss'
+                                            : 'bg-cream text-forest-dark/80 border-moss-pale hover:border-moss'
+                                    }`}
+                                >
+                                    Optimized
+                                </button>
+                            )}
+                            {view === 'original' && originalHeatmapFile && (
+                                <label className="inline-flex items-center gap-2 text-xs text-forest-dark/70 pl-1">
+                                    <input
+                                        type="checkbox"
+                                        className="rounded border-moss-pale text-moss focus:ring-moss"
+                                        checked={showHeatmap}
+                                        onChange={e => setShowHeatmap(e.target.checked)}
+                                    />
+                                    Show heatmap
+                                </label>
+                            )}
+                            <button
+                                onClick={handleFullscreen}
+                                className="bg-cream hover:bg-moss transition-all text-forest-dark text-xs px-3 py-1.5 rounded-md font-medium flex items-center gap-2 border border-moss-pale hover:border-moss"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                </svg>
+                                Full Screen
+                            </button>
+                        </div>
                     )}
                 </div>
             </h2>
 
-            {reorgFile ? (
+            {(view === 'optimized' ? reorgFile : initialFile) ? (
                 <div ref={containerRef} className="flex-1 bg-milk border border-moss-pale rounded-xl relative overflow-hidden shadow-inner bg-black flex flex-col items-center justify-center">
-                    <iframe src={reorgFile.file_path} className="absolute inset-0 w-full h-full border-none bg-black" title="Reorganized Render" />
+                    <iframe
+                        src={
+                            showHeatmap && view === 'original' && originalHeatmapFile
+                                ? originalHeatmapFile.file_path
+                                : (view === 'optimized' ? reorgFile : initialFile).file_path
+                        }
+                        className="absolute inset-0 w-full h-full border-none bg-black"
+                        title={view === 'optimized' ? "Optimized Render" : "Original Render"}
+                    />
                 </div>
             ) : (
                 <div className="flex-1 flex flex-col">

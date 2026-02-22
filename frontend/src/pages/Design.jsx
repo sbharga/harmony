@@ -186,13 +186,14 @@ export default function Design() {
         const file1ft = design?.files?.find(f => f.file_type === 'image_1ft');
         const htmlFile = design?.files?.find(f => f.file_type === 'render_3d');
         const reorgFile = design?.files?.find(f => f.file_type === 'reorganized_3d');
+        const heatmapOriginal = design?.files?.find(f => f.file_type === 'render_3d_heatmap');
         const hasResults = !!design?.files?.find(f => f.file_type === 'results_json');
 
         switch (currentStage) {
             case 1: return <Stage1Input image6ft={image6ft} image1ft={image1ft} setImage6ft={setImage6ft} setImage1ft={setImage1ft} file6ft={file6ft} file1ft={file1ft} />;
             case 2: return <Stage2Analysis jsonContent={jsonContent} hasResults={hasResults} />;
             case 3: return <Stage3Map htmlFile={htmlFile} scoreData={initialScoreData} />;
-            case 4: return <Stage4Final reorgFile={reorgFile} scoreData={optimizedScoreData} />;
+            case 4: return <Stage4Final reorgFile={reorgFile} initialFile={htmlFile} originalHeatmapFile={heatmapOriginal} scoreData={optimizedScoreData} />;
             default: return null;
         }
     };

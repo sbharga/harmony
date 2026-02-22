@@ -204,6 +204,11 @@ export default function Dashboard() {
                                 const previewFile = design.files?.find(f => f.file_type === 'image_6ft')
                                     || design.files?.find(f => f.file_type === 'image_1ft');
                                 const hasPreview = !!previewFile;
+                                const fileUrl = hasPreview
+                                    ? (previewFile.file_path?.startsWith('http')
+                                        ? previewFile.file_path
+                                        : `${import.meta.env.VITE_API_URL ?? ''}${previewFile.file_path}`)
+                                    : null;
 
                                 return (
                                     <div
@@ -213,7 +218,7 @@ export default function Dashboard() {
                                     >
                                         <div className="h-56 w-full relative overflow-hidden bg-milk flex items-center justify-center">
                                             {hasPreview ? (
-                                                <img src={previewFile.file_path} alt={`${design.name} preview`} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-300 group-hover:scale-105" />
+                                                <img src={fileUrl} alt={`${design.name} preview`} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-300 group-hover:scale-105" />
                                             ) : (
                                                 <div className="absolute inset-0 bg-gradient-to-br from-moss-pale/20 to-moss-pale/50 opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
                                             )}
