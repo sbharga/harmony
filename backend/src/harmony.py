@@ -328,6 +328,18 @@ def _facing_score(rects, objects, room, anchors):
             else:                    wfx =  1.0
             dot = fwd_x * wfx + fwd_z * wfz
             score = (dot + 1) / 2
+        elif t == "seat":
+            # Face nearest table (dining/high/coffee/side/desk)
+            nearest = _find_nearest_table(obj.get("pos") or {"x": r["cx"], "z": r["cz"]}, objects)
+            if nearest:
+                tp = nearest.get("pos") or {}
+                to_tx = tp.get("x", 0) - r["cx"]
+                to_tz = tp.get("z", 0) - r["cz"]
+                length = math.hypot(to_tx, to_tz) or 1.0
+                dot = (fwd_x * to_tx + fwd_z * to_tz) / length
+                score = (dot + 1) / 2
+            else:
+                score = 0.5
         else:
             continue
 
