@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 import os
 import shutil
 import json
@@ -45,7 +45,7 @@ async def read_users_me(current_user: models.User = Depends(get_current_user)):
 
 @api_router.get("/designs", response_model=list[schemas.Design])
 def read_designs(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    designs = db.query(models.Design).filter(models.Design.owner_id == current_user.id).offset(skip).limit(limit).all()
+    designs = db.query(models.Design).options(joinedload(models.Design.files)).filter(models.Design.owner_id == current_user.id).offset(skip).limit(limit).all()
     return designs
 
 @api_router.post("/designs", response_model=schemas.Design)
