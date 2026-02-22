@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import DesignModal from '../components/DesignModal';
+import Navigation from '../components/Navigation';
 
 // Pencil icon SVG
 const PencilIcon = () => (
@@ -162,29 +163,7 @@ export default function Dashboard() {
 
     return (
         <div className="min-h-screen bg-milk text-forest-dark">
-            <nav className="border-b border-moss-pale bg-milk/80 backdrop-blur-md sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16 items-center">
-                        <div className="flex items-center gap-3">
-                            <img src="/harmony.png" alt="Harmony Logo" className="w-12 h-12 object-contain" />
-                            <h1 className="text-3xl font-bold tracking-tight text-forest-dark">
-                                Harmony<span className="text-moss">.</span>
-                            </h1>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <div className="hidden sm:flex items-center gap-3">
-                                <span className="text-forest-dark/80 text-base font-medium">{user?.username}</span>
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="px-5 py-2 bg-cream border border-moss-pale rounded-lg hover:bg-moss-pale/50 hover:border-moss text-base font-medium transition-colors text-forest-dark"
-                            >
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <Navigation user={user} handleLogout={handleLogout} />
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
                 <div className="relative z-10">

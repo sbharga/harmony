@@ -1,0 +1,295 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Space+Mono&display=swap");
+
+.wo-root {
+    --wo-progress-duration: 4500ms;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-forest-dark, #2e3528);
+    overflow: hidden;
+    cursor: default;
+    pointer-events: auto;
+}
+
+.wo-root::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 38%, rgba(20, 24, 18, 0.8) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.wo-grain {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    opacity: 0.6;
+    animation: wo-grain 0.35s steps(1) infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes wo-grain {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    20% {
+        transform: translate(-4%, 3%);
+    }
+
+    40% {
+        transform: translate(4%, -2%);
+    }
+
+    60% {
+        transform: translate(-2%, 5%);
+    }
+
+    80% {
+        transform: translate(3%, -4%);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+.wo-leak {
+    position: absolute;
+    top: -100px;
+    left: -100px;
+    width: 480px;
+    height: 480px;
+    background: radial-gradient(circle, rgba(165, 184, 144, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    animation: wo-fade-in 2.5s ease forwards;
+    animation-delay: 0.4s;
+}
+
+.wo-corner {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    opacity: 0;
+    animation: wo-fade-in 0.8s ease forwards;
+    z-index: 2;
+}
+
+.wo-corner::before,
+.wo-corner::after {
+    content: "";
+    position: absolute;
+    background: rgba(201, 212, 184, 0.5);
+    /* moss-pale */
+}
+
+.wo-corner::before {
+    width: 100%;
+    height: 1px;
+    top: 0;
+    left: 0;
+}
+
+.wo-corner::after {
+    width: 1px;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.wo-corner--tl {
+    top: 28px;
+    left: 28px;
+    animation-delay: 0.2s;
+}
+
+.wo-corner--tr {
+    top: 28px;
+    right: 28px;
+    transform: scaleX(-1);
+    animation-delay: 0.35s;
+}
+
+.wo-corner--bl {
+    bottom: 28px;
+    left: 28px;
+    transform: scaleY(-1);
+    animation-delay: 0.5s;
+}
+
+.wo-corner--br {
+    bottom: 28px;
+    right: 28px;
+    transform: scale(-1, -1);
+    animation-delay: 0.65s;
+}
+
+.wo-content {
+    position: relative;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    z-index: 2;
+}
+
+.wo-eyebrow {
+    font-family: "Space Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.45em;
+    text-transform: uppercase;
+    color: rgba(201, 212, 184, 0.65);
+    /* moss-pale */
+    opacity: 0;
+    transform: translateY(8px);
+    animation: wo-rise 0.9s ease forwards;
+    animation-delay: 1.1s;
+    margin: 0;
+}
+
+.wo-prefix {
+    font-family: inherit;
+    /* Use site default instead of strictly Playfair */
+    font-size: clamp(22px, 3vw, 34px);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    line-height: 0.82;
+    color: rgba(165, 184, 144, 0.9);
+    /* moss */
+    margin: 0 0 -10px;
+    padding: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: wo-rise 0.9s ease forwards;
+    animation-delay: 1.3s;
+    text-shadow: 0 1px 18px rgba(165, 184, 144, 0.2);
+}
+
+.wo-title {
+    font-size: clamp(52px, 9vw, 108px);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    color: var(--color-milk, #f6f2ec);
+    margin: 0;
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+    animation: wo-wipe-in 1.1s cubic-bezier(0.77, 0, 0.18, 1) forwards;
+    animation-delay: 1.4s;
+    text-shadow: 0 2px 48px rgba(165, 184, 144, 0.25);
+}
+
+.wo-title em {
+    font-style: normal;
+    color: var(--color-moss, #a5b890);
+}
+
+.wo-subtitle {
+    font-family: "Space Mono", monospace;
+    font-size: 16px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(201, 212, 184, 0.45);
+    /* moss-pale */
+    margin: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: wo-rise 0.8s ease forwards;
+    animation-delay: 2.2s;
+}
+
+.wo-progress-track {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 1px;
+    background: rgba(201, 212, 184, 0.15);
+    /* moss-pale */
+    overflow: hidden;
+    opacity: 0;
+    animation: wo-fade-in 0.6s ease forwards;
+    animation-delay: 2.5s;
+    z-index: 2;
+}
+
+.wo-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-moss-pale, #c9d4b8), var(--color-moss, #a5b890));
+    width: 0%;
+    animation: wo-progress var(--wo-progress-duration) linear forwards;
+    animation-delay: 2.5s;
+}
+
+.wo-root.wo-exit {
+    animation: wo-exit 0.9s ease-in forwards;
+}
+
+@keyframes wo-exit {
+    0% {
+        opacity: 1;
+        filter: brightness(1) blur(0px);
+    }
+
+    100% {
+        opacity: 0;
+        filter: brightness(1.3) blur(3px);
+        pointer-events: none;
+    }
+}
+
+@keyframes wo-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes wo-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes wo-wipe-in {
+    from {
+        opacity: 1;
+        clip-path: inset(0 100% 0 0);
+    }
+
+    to {
+        opacity: 1;
+        clip-path: inset(0 0% 0 0);
+    }
+}
+
+@keyframes wo-progress {
+    from {
+        width: 0%;
+    }
+
+    to {
+        width: 100%;
+    }
+}

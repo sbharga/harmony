@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Design from './pages/Design'
+import Home from './pages/Home'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -58,9 +59,9 @@ function App() {
       <Route
         path="/"
         element={
-          <ProtectedRoute>
-            <Navigate to="/dashboard" replace />
-          </ProtectedRoute>
+          <PublicRoute>
+            <Home />
+          </PublicRoute>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />

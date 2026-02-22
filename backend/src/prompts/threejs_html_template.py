@@ -350,13 +350,14 @@ Object.assign(sun.shadow.camera, {{ near:0.5, far:60, left:-sc, right:sc, top:sc
 scene.add(sun);
 
 // ── Floor ─────────────────────────────────────────────────────────────────────
+const WALL_T  = 0.12;  // wall thickness (m)
+const FLOOR_T = 0.15;  // floor thickness (m)
 const floorColor = room.floorColor ? new THREE.Color(room.floorColor) : new THREE.Color(0xe5e9f1);
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(room.w, room.d),
+  new THREE.BoxGeometry(room.w, FLOOR_T, room.d),
   new THREE.MeshStandardMaterial({{ color: floorColor, roughness:0.8 }})
 );
-floor.rotation.x = -Math.PI/2;
-floor.position.set(room.w/2, 0, room.d/2);
+floor.position.set(room.w/2, -FLOOR_T/2, room.d/2);
 floor.receiveShadow = true;
 scene.add(floor);
 
@@ -365,19 +366,58 @@ gridHelper.position.set(room.w/2, 0.002, room.d/2);
 scene.add(gridHelper);
 
 // ── Walls ─────────────────────────────────────────────────────────────────────
-const wallMat = new THREE.MeshStandardMaterial({{ color:0xf0ebe3, roughness:0.9, side:THREE.DoubleSide }});
-function makeWall(w, h, px, py, pz, ry) {{
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wallMat);
-  m.position.set(px, py, pz);
-  m.rotation.y = ry;
-  m.receiveShadow = true;
+const wallMat = new THREE.MeshStandardMaterial({{ color:0xf0ebe3, roughness:0.9 }});
+// Back wall: inner face at z=0, box extends outward in -z
+{{
+  const m = new THREE.Mesh(new THREE.BoxGeometry(room.w, room.h, WALL_T), wallMat);
+  m.position.set(room.w/2, room.h/2, -WALL_T/2);
+  m.castShadow = true; m.receiveShadow = true;
   scene.add(m);
 }}
-makeWall(room.w, room.h, room.w/2, room.h/2, 0, 0); // back wall always
 const hasLeft  = anchors?.pillar?.wall === 'left'  || anchors?.door?.wall === 'left';
 const hasRight = anchors?.pillar?.wall === 'right' || anchors?.door?.wall === 'right';
-if (hasLeft)  makeWall(room.d, room.h, 0,       room.h/2, room.d/2,  Math.PI/2);
-if (hasRight) makeWall(room.d, room.h, room.w,  room.h/2, room.d/2, -Math.PI/2);
+// Left wall: inner face at x=0, box extends in -x
+if (hasLeft) {{
+  const m = new THREE.Mesh(new THREE.BoxGeometry(WALL_T, room.h, room.d), wallMat);
+  m.position.set(-WALL_T/2, room.h/2, room.d/2);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m);
+}}
+// Right wall: inner face at x=room.w, box extends in +x
+if (hasRight) {{
+  const m = new THREE.Mesh(new THREE.BoxGeometry(WALL_T, room.h, room.d), wallMat);
+  m.position.set(room.w + WALL_T/2, room.h/2, room.d/2);
+  m.castShadow = true; m.receiveShadow = true;
+  scene.add(m);
+}}
+
+// ── Wall / floor seam lines ────────────────────────────────────────────────────
+{{
+  const seamMat = new THREE.LineBasicMaterial({{ color: 0x1e2535 }});
+  function seam(pts) {{
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      pts.map(function(p) {{ return new THREE.Vector3(p[0], p[1], p[2]); }})
+    ), seamMat));
+  }}
+  // Floor perimeter at y=0
+  seam([[0,0,0],[room.w,0,0]]);
+  seam([[0,0,0],[0,0,room.d]]);
+  seam([[room.w,0,0],[room.w,0,room.d]]);
+  seam([[0,0,room.d],[room.w,0,room.d]]);
+  // Back wall top and vertical corners
+  seam([[0,room.h,0],[room.w,room.h,0]]);
+  if (hasLeft)  seam([[0,0,0],[0,room.h,0]]);
+  if (hasRight) seam([[room.w,0,0],[room.w,room.h,0]]);
+  // Side wall far corners and top edges
+  if (hasLeft) {{
+    seam([[0,0,room.d],[0,room.h,room.d]]);
+    seam([[0,room.h,0],[0,room.h,room.d]]);
+  }}
+  if (hasRight) {{
+    seam([[room.w,0,room.d],[room.w,room.h,room.d]]);
+    seam([[room.w,room.h,0],[room.w,room.h,room.d]]);
+  }}
+}}
 
 // ── Anchor highlights ─────────────────────────────────────────────────────────
 function placeAnchor(a, key) {{
