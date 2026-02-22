@@ -448,14 +448,24 @@ def _adjacency_bonus(rects, objects):
             if tj == "bed" and ti == "table" and vi == "nightstand": add_pair(i, j, 0.8, 0.05)
             if ti == "bed" and tj == "storageunit" and vj in ("dresser_low","dresser_tall"): add_pair(i, j, 1.2, 0.04)
             if tj == "bed" and ti == "storageunit" and vi in ("dresser_low","dresser_tall"): add_pair(i, j, 1.2, 0.04)
-            if ti == "sofa" and tj == "seat" and vj == "ottoman": add_pair(i, j, 0.9, 0.05)
-            if tj == "sofa" and ti == "seat" and vi == "ottoman": add_pair(i, j, 0.9, 0.05)
+            # Seating cluster: sofa + ottoman/seat close but not overlapping
+            if ti == "sofa" and tj == "seat" and vj in ("ottoman","accent","dining"): add_pair(i, j, 1.0, 0.05)
+            if tj == "sofa" and ti == "seat" and vi in ("ottoman","accent","dining"): add_pair(i, j, 1.0, 0.05)
             if ti == "sofa" and tj == "table" and vj in ("coffee","side"): add_pair(i, j, 1.0, 0.04)
             if tj == "sofa" and ti == "table" and vi in ("coffee","side"): add_pair(i, j, 1.0, 0.04)
             if ti == "table" and vi == "desk" and tj == "seat": add_pair(i, j, 0.8, 0.05)
             if tj == "table" and vj == "desk" and ti == "seat": add_pair(i, j, 0.8, 0.05)
+            # Dining / high table seating
+            if ti == "table" and vj == "dining" and tj == "seat" and vi in ("dining","stool","accent"):
+                add_pair(i, j, 1.4, 0.06)
+            if tj == "table" and vi == "dining" and ti == "seat" and vj in ("dining","stool","accent"):
+                add_pair(i, j, 1.4, 0.06)
+            if ti == "table" and vi == "high" and tj == "seat":
+                add_pair(i, j, 1.2, 0.06)
+            if tj == "table" and vj == "high" and ti == "seat":
+                add_pair(i, j, 1.2, 0.06)
 
-    return min(0.15, sum(pairs))
+    return min(0.2, sum(pairs))
 
 # ── Main scorer ────────────────────────────────────────────────────────────────
 
@@ -518,7 +528,8 @@ def compute_harmony(spec: dict) -> float:
             pair_count += 1
     cluster_pen = cluster_accum / pair_count if pair_count else 0.0
 
-    pen = max(0.0, min(1.0, 5 * (a_overlap / A) + 5 * (a_oob / A) + 3 * door_blocked + 0.5 * cluster_pen))
+    # Penalties relaxed to be less strict
+    pen = max(0.0, min(1.0, 3.0 * (a_overlap / A) + 3.0 * (a_oob / A) + 2.0 * door_blocked + 0.3 * cluster_pen))
 
     base = (
         0.20 * open_region
@@ -593,7 +604,7 @@ def compute_harmony_breakdown(spec: dict) -> dict:
             pair_count += 1
     cluster_pen = cluster_accum / pair_count if pair_count else 0.0
 
-    pen = max(0.0, min(1.0, 5 * (a_overlap / A) + 5 * (a_oob / A) + 3 * door_blocked + 0.5 * cluster_pen))
+    pen = max(0.0, min(1.0, 3.0 * (a_overlap / A) + 3.0 * (a_oob / A) + 2.0 * door_blocked + 0.3 * cluster_pen))
 
     base = (
         0.20 * open_region
