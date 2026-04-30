@@ -328,7 +328,7 @@ const ITEMS = [
     layouts: [
       { x: -1.8, z: 0.85, ry: Math.PI * 0.22 },
       { x: 1.8, z: 1.0, ry: -Math.PI * 0.22 },
-      { x: 0.5, z: -1.5, ry: -Math.PI * 0.12 },
+      { x: 0.5, z: -2.0, ry: -Math.PI * 0.12 },
     ],
     birdW: 0.9,
     birdD: 0.85,
@@ -341,8 +341,8 @@ const ITEMS = [
     build: makeOttoman,
     layouts: [
       { x: 1.7, z: 0.95, ry: 0 },
-      { x: -1.65, z: 0.8, ry: 0 },
-      { x: 0.55, z: -0.7, ry: 0 },
+      { x: -1.65, z: 0.35, ry: 0 },
+      { x: -0.6, z: -0.2, ry: 0 },
     ],
     birdW: 0.82,
     birdD: 0.82,
@@ -356,7 +356,7 @@ const ITEMS = [
     layouts: [
       { x: -2.58, z: -0.7, ry: Math.PI / 2 },
       { x: -0.7, z: -2.58, ry: 0 },
-      { x: -2.58, z: 0.9, ry: Math.PI / 2 },
+      { x: -1.2, z: -2.58, ry: 0 },
     ],
     birdW: 1.28,
     birdD: 0.42,
@@ -370,7 +370,7 @@ const ITEMS = [
     layouts: [
       { x: 2.25, z: -1.8, ry: 0 },
       { x: -2.2, z: 1.7, ry: 0 },
-      { x: -2.2, z: -2.0, ry: 0 },
+      { x: -2.4, z: -1.6, ry: 0 },
     ],
     birdW: 0.5,
     birdD: 0.5,
@@ -383,8 +383,8 @@ const ITEMS = [
     build: makeSideTable,
     layouts: [
       { x: -1.75, z: 2.05, ry: 0 },
-      { x: 1.8, z: 1.85, ry: 0 },
-      { x: 2.1, z: -0.8, ry: 0 },
+      { x: 1.3, z: 2.1, ry: 0 },
+      { x: 1.9, z: 1.7, ry: 0 },
     ],
     birdW: 0.55,
     birdD: 0.55,
@@ -411,7 +411,7 @@ const ITEMS = [
     build: makeFloorLamp,
     layouts: [
       { x: 1.9, z: 2.1, ry: 0 },
-      { x: 2.1, z: 2.0, ry: 0 },
+      { x: 2.5, z: 2.4, ry: 0 },
       { x: 2.1, z: -2.1, ry: 0 },
     ],
     birdW: 0.42,
@@ -422,6 +422,8 @@ const ITEMS = [
 ];
 
 const ORIENTATION_LABELS = ["Conversational", "Flow-Optimised", "Light-Facing"];
+// Pre-computed harmony scores for each demo layout
+const LAYOUT_SCORES = [62, 77, 68];
 
 function makeBirdsEyeTexture(layoutIdx) {
   const SIZE = 512;
@@ -536,6 +538,7 @@ export default function LiveDemo() {
   const [oriIdx, setOriIdx] = useState(0);
   const [oriLabel, setOriLabel] = useState("");
   const [hint, setHint] = useState("");
+  const [layoutScore, setLayoutScore] = useState(null);
 
   // Trigger animation only when section enters viewport
   useEffect(() => {
@@ -800,6 +803,7 @@ export default function LiveDemo() {
           setPhase("orienting");
           setOriIdx(0);
           setOriLabel(ORIENTATION_LABELS[0]);
+          setLayoutScore(LAYOUT_SCORES[0]);
         }
       } else if (animPhase === "orienting") {
         const prog = Math.min(phaseT / 3.0, 1);
@@ -813,6 +817,7 @@ export default function LiveDemo() {
             oriIdxL = next;
             setOriIdx(next);
             setOriLabel(ORIENTATION_LABELS[next]);
+            setLayoutScore(LAYOUT_SCORES[next]);
             startLayoutTransition(next, 1.4);
           } else {
             animPhase = "interactive";
@@ -890,6 +895,11 @@ export default function LiveDemo() {
                 <div className="bg-forest-dark/85 backdrop-blur-md border border-moss/30 rounded-full px-5 py-1.5 flex items-center gap-2.5 shadow-xl">
                   <span className="w-1.5 h-1.5 rounded-full bg-moss inline-block" />
                   <span className="text-sm font-semibold text-moss tracking-wide">{oriLabel}</span>
+                  {layoutScore != null && (
+                    <span className="text-xs font-bold text-moss/70 bg-moss/10 px-2 py-0.5 rounded-full">
+                      {layoutScore}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -910,6 +920,14 @@ export default function LiveDemo() {
               </div>
             )}
 
+            {phase === "interactive" && (
+              <div className="absolute top-4 right-4 pointer-events-none z-10" style={{ animation: "fadeIn 0.6s ease forwards" }}>
+                <div className="bg-forest-dark/75 backdrop-blur-md border border-moss/25 rounded-xl px-3 py-2 text-right shadow-lg">
+                  <p className="text-moss/50 text-[9px] font-bold tracking-[0.18em] uppercase mb-0.5">Best layout</p>
+                  <p className="text-moss text-xs font-semibold">{ORIENTATION_LABELS[1]} — {LAYOUT_SCORES[1]}</p>
+                </div>
+              </div>
+            )}
             {phase === "interactive" && hint && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none" style={{ animation: "fadeIn 1.2s ease forwards" }}>
                 <p className="text-moss/45 text-xs tracking-[0.22em] uppercase">{hint}</p>

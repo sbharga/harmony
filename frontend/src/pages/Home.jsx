@@ -1,37 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 import Navigation from '../components/Navigation';
-import { WelcomeOverlay } from '../components/WelcomeOverlay';
 import LiveDemo from '../components/LiveDemo';
 
 export default function Home() {
-    const [showWelcome, setShowWelcome] = useState(false);
-
-    useEffect(() => {
-        const hasSeenWelcome = false;// sessionStorage.getItem('hasSeenWelcome');
-        if (!hasSeenWelcome) {
-            setShowWelcome(true);
-        }
-    }, []);
-
-    const handleWelcomeComplete = () => {
-        setShowWelcome(false);
-        sessionStorage.setItem('hasSeenWelcome', 'true');
-        // Ensure we land at the top when overlay finishes
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    };
-
-    // Always start at top on first render (even if overlay is skipped)
     useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }, []);
 
     return (
         <div className="min-h-screen bg-milk text-forest-dark font-sans selection:bg-moss-pale selection:text-forest-dark relative">
-            {showWelcome && <WelcomeOverlay onComplete={handleWelcomeComplete} />}
-
-            {/* The rest of the page starts hidden or dimmed if overlay is active, though overlay has z-index 9999 and covers everything */}
-
             <Navigation user={null} handleLogout={() => { }} />
 
             <main className="relative">
@@ -173,7 +151,7 @@ export default function Home() {
 
                 {/* Footer */}
                 <footer className="bg-milk border-t border-moss-pale py-10 text-center">
-                    <p className="text-forest-dark/60">&copy; {new Date().getFullYear()} Harmony. All rights reserved.</p>
+                    <p className="text-forest-dark/60">&copy; {new Date().getFullYear()} Harmony All rights reserved.</p>
                 </footer>
             </main>
         </div>
